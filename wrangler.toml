@@ -14,7 +14,22 @@ id = "placeholder"
 [vars]
 ENVIRONMENT = "development"
 
-# Secrets to set via `wrangler secret put`:
+[env.production]
+name = "handshake-production"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "handshake-db"
+database_id = "placeholder"
+
+[[env.production.kv_namespaces]]
+binding = "KV"
+id = "placeholder"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+
+# Secrets to set via `wrangler secret put` (per environment):
 # - GOOGLE_CLIENT_ID
 # - GOOGLE_CLIENT_SECRET
 # - GITHUB_CLIENT_ID
