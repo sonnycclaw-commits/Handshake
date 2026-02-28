@@ -6,15 +6,15 @@
  * error scenarios while maintaining security and clarity.
  */
 
-import { ErrorCode } from '../../../src/domain/value-objects/error-code'
-import { LogLevel } from '../../../src/domain/value-objects/log-level'
+import { ErrorCode } from '@/domain/value-objects/error-code'
+import { LogLevel } from '@/domain/value-objects/log-level'
 import {
   ManifestError,
   SignatureError,
   ValidationError,
   SecurityError
-} from '../../../src/domain/errors'
-import { CURRENT_VERSION } from '../../../src/domain/constants/manifest-version'
+} from '@/domain/errors'
+import { CURRENT_VERSION } from '@/domain/constants/manifest-version'
 
 /**
  * Builder for creating test error scenarios

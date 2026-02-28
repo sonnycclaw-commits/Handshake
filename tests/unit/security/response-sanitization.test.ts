@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { sanitizeResponse } from '../../../../src/domain/services/response-sanitization'
+import { sanitizeResponse } from '@/domain/services/response-sanitization'
 import { 
   generateTestCard,
   generateTestSSN,
@@ -7,8 +7,8 @@ import {
   createNestedStructure,
   TestResponseBuilder
 } from '../../fixtures/sensitive-data'
-import { SensitiveDataPattern } from '../../../../src/domain/value-objects/sensitive-data-pattern'
-import { DetectionResult } from '../../../../src/domain/value-objects/detection-result'
+import { SensitiveDataPattern } from '@/domain/value-objects/sensitive-data-pattern'
+import { DetectionResult } from '@/domain/value-objects/detection-result'
 
 /**
  * Response Sanitization Test Suite

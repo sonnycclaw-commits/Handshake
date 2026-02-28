@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { setRequestWorkflowStore, submitRequest } from '../../../../src/domain/services/request-workflow'
-import { D1RequestWorkflowStore } from '../../../../src/adapters/persistence/d1-request-workflow-store'
+import { setRequestWorkflowStore, submitRequest } from '@/domain/services/request-workflow'
+import { D1RequestWorkflowStore } from '@/adapters/persistence/d1-request-workflow-store'
 
 class FakeStmt {
   private sql: string

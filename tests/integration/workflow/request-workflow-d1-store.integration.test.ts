@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { setRequestWorkflowStore, submitRequest, resolveRequestHitl, getRequestAudit, getRequestLineage } from '../../../../src/domain/services/request-workflow'
-import { InMemoryRequestWorkflowStore } from '../../../../src/adapters/persistence/in-memory-request-workflow-store'
-import { D1RequestWorkflowStore } from '../../../../src/adapters/persistence/d1-request-workflow-store'
+import { setRequestWorkflowStore, submitRequest, resolveRequestHitl, getRequestAudit, getRequestLineage } from '@/domain/services/request-workflow'
+import { InMemoryRequestWorkflowStore } from '@/adapters/persistence/in-memory-request-workflow-store'
+import { D1RequestWorkflowStore } from '@/adapters/persistence/d1-request-workflow-store'
 
 class FakeStmt {
   private sql: string

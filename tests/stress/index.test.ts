@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { createManifest } from '../../../src/domain/services/create-manifest'
-import { signManifest } from '../../../src/domain/services/sign-manifest'
-import { verifyManifestSignature } from '../../../src/domain/services/verify-manifest-signature'
-import { generateKeyPair } from '../../../src/domain/services/generate-key-pair'
+import { createManifest } from '@/domain/services/create-manifest'
+import { signManifest } from '@/domain/services/sign-manifest'
+import { verifyManifestSignature } from '@/domain/services/verify-manifest-signature'
+import { generateKeyPair } from '@/domain/services/generate-key-pair'
 
 /**
  * Stress Test Suite

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createHITLRequest, approveHITL, timeoutHITL } from '../../../../src/domain/services/hitl-workflow'
+import { createHITLRequest, approveHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
 
 describe('HITL Workflow Premortem Fixes', () => {
   it('does not timeout before expiry when now is provided', async () => {

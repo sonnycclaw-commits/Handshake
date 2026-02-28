@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { InMemoryAuditLog, type QueryFilter } from '../../../../src/domain/services/audit-log'
-import { AuditEntry } from '../../../../src/domain/entities/audit-entry'
+import { InMemoryAuditLog, type QueryFilter } from '@/domain/services/audit-log'
+import { AuditEntry } from '@/domain/entities/audit-entry'
 
 /**
  * Test Fixtures for Audit Log

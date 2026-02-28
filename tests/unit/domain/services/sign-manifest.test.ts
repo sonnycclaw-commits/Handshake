@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { signManifest } from '../../../../src/domain/services/sign-manifest'
-import { verifyManifestSignature } from '../../../../src/domain/services/verify-manifest-signature'
-import { Manifest } from '../../../../src/domain/entities/manifest'
-import { CredentialType } from '../../../../src/domain/value-objects/credential-type'
-import { CredentialId } from '../../../../src/domain/value-objects/credential-id'
-import { Tier } from '../../../../src/domain/value-objects/tier'
+import { signManifest } from '@/domain/services/sign-manifest'
+import { verifyManifestSignature } from '@/domain/services/verify-manifest-signature'
+import { Manifest } from '@/domain/entities/manifest'
+import { CredentialType } from '@/domain/value-objects/credential-type'
+import { CredentialId } from '@/domain/value-objects/credential-id'
+import { Tier } from '@/domain/value-objects/tier'
 import {
   TEST_PRIVATE_KEY,
   OTHER_PRIVATE_KEY,
   INVALID_PRIVATE_KEY,
   generateTestKeyPair
 } from '../../fixtures/keys'
-import { canonicalizeManifest } from '../../../../src/domain/serialization/manifest-canonicalization'
+import { canonicalizeManifest } from '@/domain/serialization/manifest-canonicalization'
 
 /**
  * Security Test Suite: Manifest Signing

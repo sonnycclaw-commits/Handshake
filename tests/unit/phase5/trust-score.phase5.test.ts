@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildTrustPosture } from '../../../../src/domain/services/trust-score'
+import { buildTrustPosture } from '@/domain/services/trust-score'
 
 describe('Phase 5 RED: Trust Posture (transparent)', () => {
   it('returns transparent posture with metrics, drivers, and recommendation', () => {

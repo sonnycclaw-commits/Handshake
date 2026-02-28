@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { Manifest } from '../../../../src/domain/entities/manifest'
-import { CredentialType } from '../../../../src/domain/value-objects/credential-type'
-import { CredentialId } from '../../../../src/domain/value-objects/credential-id'
-import { Tier } from '../../../../src/domain/value-objects/tier'
+import { Manifest } from '@/domain/entities/manifest'
+import { CredentialType } from '@/domain/value-objects/credential-type'
+import { CredentialId } from '@/domain/value-objects/credential-id'
+import { Tier } from '@/domain/value-objects/tier'
 
 /**
  * Test Fixtures

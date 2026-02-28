@@ -4,7 +4,7 @@ import {
   selectOnboardingPolicy,
   evaluateGuidedAction,
   getOnboardingAuditEvents,
-} from '../../../../src/domain/services/onboarding-workflow'
+} from '@/domain/services/onboarding-workflow'
 
 describe('Onboarding RED integration: enforcement + deterministic outcomes', () => {
   it('T-ONB-011: logs security event on privileged bypass attempt', () => {

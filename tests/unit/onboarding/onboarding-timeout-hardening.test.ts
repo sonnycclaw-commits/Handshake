@@ -4,7 +4,7 @@ import {
   selectOnboardingPolicy,
   evaluateGuidedAction,
   resolveOnboardingHitl,
-} from '../../../../src/domain/services/onboarding-workflow'
+} from '@/domain/services/onboarding-workflow'
 
 describe('Onboarding timeout/fail-closed hardening', () => {
   it('OBE-4.1: once HITL expires, later approval cannot implicitly allow', () => {

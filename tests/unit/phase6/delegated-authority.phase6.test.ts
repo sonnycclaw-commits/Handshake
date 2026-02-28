@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { issueDelegationEnvelope, validateDelegatedAction } from '../../../../src/domain/services/delegated-authority'
+import { issueDelegationEnvelope, validateDelegatedAction } from '@/domain/services/delegated-authority'
 
 describe('Phase 6 RED: Delegated Authority', () => {
   it('issues scoped delegation envelope', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evaluatePolicy } from '../../../../src/domain/services/policy-evaluator'
+import { evaluatePolicy } from '@/domain/services/policy-evaluator'
 
 describe('Phase 3 RED: Policy Evaluator', () => {
   it('returns deterministic decision for same input', () => {

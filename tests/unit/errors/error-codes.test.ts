@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import * as errorCodes from '../../../../src/domain/errors/error-codes'
+import * as errorCodes from '@/domain/errors/error-codes'
 
 describe('Error Codes', () => {
   it('defines MANIFEST_INVALID_FIELDS error code', () => {

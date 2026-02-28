@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { executePrivilegedAction } from '../../../../src/use-cases/execute-privileged-action'
-import { submitRequest } from '../../../../src/domain/services/request-workflow'
-import { InMemoryVault } from '../../../../src/adapters/vault/in-memory-vault'
+import { executePrivilegedAction } from '@/use-cases/execute-privileged-action'
+import { submitRequest } from '@/domain/services/request-workflow'
+import { InMemoryVault } from '@/adapters/vault/in-memory-vault'
 
 describe('Artifact gate + vault integration (C6)', () => {
   it('denies vault execution when artifact is tampered', async () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { InMemoryVault } from '../../src/adapters/vault/in-memory-vault'
+import { InMemoryVault } from '@/adapters/vault/in-memory-vault'
 
 describe('Runtime Authorization Boundaries', () => {
   it('rejects credential ownership mismatch', async () => {

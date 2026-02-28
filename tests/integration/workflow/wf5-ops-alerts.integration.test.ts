@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, authorizePrivilegedExecution } from '../../../../src/domain/services/request-workflow'
-import { getWF5MetricsSnapshot, evaluateWF5SLOs } from '../../../../src/domain/services/wf5-ops-metrics'
+import { submitRequest, authorizePrivilegedExecution } from '@/domain/services/request-workflow'
+import { getWF5MetricsSnapshot, evaluateWF5SLOs } from '@/domain/services/wf5-ops-metrics'
 
 describe('WF5 Ops alerts integration (C7)', () => {
   it('captures key counters and evaluates alert signals', async () => {

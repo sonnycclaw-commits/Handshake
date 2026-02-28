@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createQuorumRequest, submitQuorumDecision } from '../../../../src/domain/services/quorum-hitl'
+import { createQuorumRequest, submitQuorumDecision } from '@/domain/services/quorum-hitl'
 
 describe('Phase 6 RED: Quorum HITL', () => {
   it('requires M-of-N approvals before terminal approve', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { activateEmergencyControl } from '../../../../src/domain/services/emergency-controls'
+import { activateEmergencyControl } from '@/domain/services/emergency-controls'
 
 describe('Phase 5 RED: Emergency Controls', () => {
   it('activates global deny mode with audit reason', () => {

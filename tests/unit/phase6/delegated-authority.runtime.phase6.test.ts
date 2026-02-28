@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { issueDelegationEnvelope } from '../../../../src/domain/services/delegated-authority'
+import { issueDelegationEnvelope } from '@/domain/services/delegated-authority'
 
 describe('Phase 6 A2: delegated authority runtime determinism', () => {
   it('uses injected clock/id providers when supplied', () => {

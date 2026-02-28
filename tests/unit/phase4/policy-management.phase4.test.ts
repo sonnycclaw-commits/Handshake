@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createPolicyDraft, simulatePolicy, publishPolicy } from '../../../../src/domain/services/policy-management'
+import { createPolicyDraft, simulatePolicy, publishPolicy } from '@/domain/services/policy-management'
 
 describe('Phase 4 RED: Policy Management', () => {
   it('creates policy draft with version metadata', () => {

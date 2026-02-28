@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CredentialType } from '../../../../src/domain/value-objects/credential-type'
+import { CredentialType } from '@/domain/value-objects/credential-type'
 
 // TODO: Update allowed types list if spec changes
 const allowedTypes = [

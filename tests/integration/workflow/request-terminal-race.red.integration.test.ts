@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, resolveRequestHitl } from '../../../../src/domain/services/request-workflow'
+import { submitRequest, resolveRequestHitl } from '@/domain/services/request-workflow'
 
 describe('Request Workflow RED (terminal race)', () => {
   it('preserves terminal immutability under callback race', async () => {

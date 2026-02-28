@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { verifyManifestSignature } from '../../../../src/domain/services/verify-manifest-signature'
-import { signManifest } from '../../../../src/domain/services/sign-manifest'
-import { Manifest } from '../../../../src/domain/entities/manifest'
-import { CredentialType } from '../../../../src/domain/value-objects/credential-type'
-import { CredentialId } from '../../../../src/domain/value-objects/credential-id'
-import { Tier } from '../../../../src/domain/value-objects/tier'
+import { verifyManifestSignature } from '@/domain/services/verify-manifest-signature'
+import { signManifest } from '@/domain/services/sign-manifest'
+import { Manifest } from '@/domain/entities/manifest'
+import { CredentialType } from '@/domain/value-objects/credential-type'
+import { CredentialId } from '@/domain/value-objects/credential-id'
+import { Tier } from '@/domain/value-objects/tier'
 import { TEST_PRIVATE_KEY, OTHER_PRIVATE_KEY, OTHER_PUBLIC_KEY } from '../../fixtures/keys'
 
 const makeManifest = () => new Manifest(
