@@ -19,6 +19,7 @@
     "wrangler": "^4.69.0"
   },
   "dependencies": {
+    "@clerk/backend": "^2.33.0",
     "canonicalize": "^2.1.0"
   }
 }

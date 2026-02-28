@@ -1,15 +1,17 @@
 name = "handshake"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
+workers_dev = true
+preview_urls = false
 
 [[d1_databases]]
 binding = "DB"
 database_name = "handshake-db"
-database_id = "placeholder"
+database_id = "2e5d85a9-9800-4477-b8ef-ecc01bede6d6"
 
 [[kv_namespaces]]
 binding = "KV"
-id = "placeholder"
+id = "3053f3b8b2d448a8b5d5966d77582eb1"
 
 [vars]
 ENVIRONMENT = "development"
@@ -20,11 +22,11 @@ name = "handshake-production"
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "handshake-db"
-database_id = "placeholder"
+database_id = "2e5d85a9-9800-4477-b8ef-ecc01bede6d6"
 
 [[env.production.kv_namespaces]]
 binding = "KV"
-id = "placeholder"
+id = "3053f3b8b2d448a8b5d5966d77582eb1"
 
 [env.production.vars]
 ENVIRONMENT = "production"
