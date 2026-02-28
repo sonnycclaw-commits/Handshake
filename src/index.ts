@@ -323,6 +323,59 @@ app.get('/metrics/reasons', async (c) => {
   })
 })
 
+
+
+app.post('/metrics/project', async (c) => {
+  const now = Date.now()
+  const windowMs = parseWindow(c.req.query('window'))
+  const startMs = now - windowMs
+
+  const store = new D1RequestWorkflowStore(c.env.DB)
+  const events = await store.getMetricsEventsInWindow(startMs, now)
+  const summary = computeMetricsSummary(events as any)
+
+  const hourBucket = Math.floor(now / (60 * 60 * 1000)) * 60 * 60 * 1000
+  const dayBucket = Math.floor(now / (24 * 60 * 60 * 1000)) * 24 * 60 * 60 * 1000
+
+  const rows = [
+    { metricName: 'uair', valueReal: summary.uair },
+    { metricName: 'airt_p50_ms', valueReal: summary.airtP50Ms },
+    { metricName: 'airt_p95_ms', valueReal: summary.airtP95Ms },
+    { metricName: 'gar', valueReal: summary.gar },
+    { metricName: 'tca', valueReal: summary.tca },
+  ]
+
+  for (const r of rows) {
+    await store.upsertMetricsRollupHourly({
+      bucketStartMs: hourBucket,
+      metricName: r.metricName,
+      dimensionKey: 'all',
+      valueReal: r.valueReal,
+      sampleCount: events.length,
+      schemaVersion: METRICS_SCHEMA_VERSION,
+      projectorVersion: METRICS_PROJECTOR_VERSION,
+    })
+
+    await store.upsertMetricsRollupDaily({
+      bucketStartMs: dayBucket,
+      metricName: r.metricName,
+      dimensionKey: 'all',
+      valueReal: r.valueReal,
+      sampleCount: events.length,
+      schemaVersion: METRICS_SCHEMA_VERSION,
+      projectorVersion: METRICS_PROJECTOR_VERSION,
+    })
+  }
+
+  return c.json({
+    status: 'ok',
+    projected_events: events.length,
+    hour_bucket: hourBucket,
+    day_bucket: dayBucket,
+    metrics: summary,
+  })
+})
+
 // ====================
 // OAUTH HELPERS
 // ====================
