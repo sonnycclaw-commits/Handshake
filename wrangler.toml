@@ -1,0 +1,24 @@
+name = "handshake"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "handshake-db"
+database_id = "placeholder"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "placeholder"
+
+[vars]
+ENVIRONMENT = "development"
+
+# Secrets to set via `wrangler secret put`:
+# - GOOGLE_CLIENT_ID
+# - GOOGLE_CLIENT_SECRET
+# - GITHUB_CLIENT_ID
+# - GITHUB_CLIENT_SECRET
+# - JWT_PRIVATE_KEY (base64-encoded PKCS#8)
+# - JWT_PUBLIC_KEY (base64-encoded SPKI)
+# - JWT_KEY_ID (e.g., "key-1")
