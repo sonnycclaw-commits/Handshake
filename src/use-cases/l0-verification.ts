@@ -1,6 +1,7 @@
 import type { CredentialService } from '../ports/credential-service'
 import type { IdentityStore } from '../ports/identity-store'
 import type { StateStore } from '../ports/state-store'
+import type { IdentityProvider } from '../ports/identity-provider'
 
 type BuildOAuthUrl = (provider: string, state: string, codeChallenge: string) => string
 
@@ -24,16 +25,33 @@ type Deps = {
   stateStore: StateStore
   credentialService: CredentialService
   helpers: Helpers
+  identityProvider?: IdentityProvider
+  identityMode?: 'legacy' | 'clerk'
 }
 
 export class L0VerificationUseCases {
   constructor(private readonly deps: Deps) {}
+
+  private get identityMode(): 'legacy' | 'clerk' {
+    return this.deps.identityMode ?? 'legacy'
+  }
 
   async startVerification(input: {
     agentId?: string
     provider?: string
     privacyLevel?: string
   }): Promise<{ status: number; body: any }> {
+    if (this.identityMode === 'clerk') {
+      return {
+        status: 410,
+        body: {
+          status: 'error',
+          error: 'identity_provider_clerk_mode',
+          message: 'Legacy OAuth start is disabled in Clerk mode.'
+        }
+      }
+    }
+
     const { agentId, provider, privacyLevel = 'full' } = input
 
     if (!agentId || !provider) {
@@ -86,6 +104,17 @@ export class L0VerificationUseCases {
     state?: string
     oauthError?: string
   }): Promise<{ status: number; body: any }> {
+    if (this.identityMode === 'clerk') {
+      return {
+        status: 410,
+        body: {
+          status: 'error',
+          error: 'identity_provider_clerk_mode',
+          message: 'Legacy OAuth callback is disabled in Clerk mode.'
+        }
+      }
+    }
+
     const { code, state, oauthError } = input
 
     if (oauthError) {
@@ -179,6 +208,59 @@ export class L0VerificationUseCases {
     agentId: string
     authorizationHeader?: string
   }): Promise<{ status: number; body: any }> {
+    if (this.identityMode === 'clerk' && this.deps.identityProvider) {
+      const principal = await this.deps.identityProvider.verifyAuthorizationHeader(input.authorizationHeader)
+      if (principal.ok) {
+        const linkage = await this.deps.identityStore.getActiveLinkageWithTrustByAgentId(input.agentId)
+        if (!linkage) {
+          return {
+            status: 200,
+            body: { verified: false, agent_id: input.agentId }
+          }
+        }
+
+        const joined = {
+          ...toLegacyLinkage(linkage.linkage),
+          agents_owned: linkage.trust.agentsOwned,
+          offers_published: linkage.trust.offersPublished,
+          successful_trades: linkage.trust.successfulTrades,
+          reputation_score: linkage.trust.reputationScore
+        }
+
+        return {
+          status: 200,
+          body: {
+            verified: true,
+            agent_id: input.agentId,
+            owner: {
+              provider: linkage.linkage.ownerProvider,
+              display: this.deps.helpers.getOwnerDisplay(joined)
+            },
+            verification_mode: 'online',
+            verification_level: this.deps.helpers.computeVerificationLevel(joined),
+            badge: this.deps.helpers.computeBadge(joined),
+            verified_at: linkage.linkage.verifiedAt,
+            trust_signals: {
+              agents_owned: linkage.trust.agentsOwned,
+              offers_published: linkage.trust.offersPublished,
+              successful_trades: linkage.trust.successfulTrades,
+              reputation_score: linkage.trust.reputationScore
+            },
+            identity_source: 'clerk'
+          }
+        }
+      }
+
+      return {
+        status: 401,
+        body: {
+          status: 'error',
+          error: principal.reasonCode,
+          message: 'Clerk identity verification failed'
+        }
+      }
+    }
+
     if (input.authorizationHeader?.startsWith('Bearer ')) {
       const token = input.authorizationHeader.slice(7)
       const verified = await this.deps.credentialService.verify(token)

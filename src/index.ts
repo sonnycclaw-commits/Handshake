@@ -5,6 +5,7 @@ import { D1IdentityStore } from './adapters/persistence/d1-identity-store';
 import { KvStateStore } from './adapters/persistence/kv-state-store';
 import { JwtCredentialService } from './adapters/crypto/jwt-credential-service';
 import { L0VerificationUseCases } from './use-cases/l0-verification';
+import { ClerkIdentityProvider } from './adapters/identity/clerk-identity-provider';
 
 type Bindings = {
   DB: D1Database;
@@ -17,12 +18,27 @@ type Bindings = {
   JWT_PRIVATE_KEY: string;
   JWT_PUBLIC_KEY: string;
   JWT_KEY_ID: string;
+  IDENTITY_PROVIDER?: 'legacy' | 'clerk';
+  CLERK_JWT_KEY?: string;
+  CLERK_SECRET_KEY?: string;
+  CLERK_AUDIENCE?: string;
+  CLERK_AUTHORIZED_PARTIES?: string;
 };
 
 const app = new Hono<{ Bindings: Bindings }>();
 
+function validateIdentityConfig(env: Bindings): void {
+  const mode = env.IDENTITY_PROVIDER ?? 'legacy'
+  if (mode !== 'clerk') return
+
+  if (!env.CLERK_JWT_KEY && !env.CLERK_SECRET_KEY) {
+    throw new Error('Clerk mode requires CLERK_JWT_KEY or CLERK_SECRET_KEY')
+  }
+}
+
 
 function createL0UseCases(env: Bindings): L0VerificationUseCases {
+  validateIdentityConfig(env)
   return new L0VerificationUseCases({
     identityStore: new D1IdentityStore(env.DB),
     stateStore: new KvStateStore(env.KV),
@@ -41,7 +57,16 @@ function createL0UseCases(env: Bindings): L0VerificationUseCases {
       getOwnerDisplay,
       computeVerificationLevel,
       computeBadge
-    }
+    },
+    identityMode: env.IDENTITY_PROVIDER ?? 'legacy',
+    identityProvider: new ClerkIdentityProvider({
+      jwtKey: env.CLERK_JWT_KEY,
+      secretKey: env.CLERK_SECRET_KEY,
+      audience: env.CLERK_AUDIENCE,
+      authorizedParties: env.CLERK_AUTHORIZED_PARTIES
+        ? env.CLERK_AUTHORIZED_PARTIES.split(',').map((s) => s.trim()).filter(Boolean)
+        : undefined,
+    })
   });
 }
 
