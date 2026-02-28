@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { listHITLQueue, getHITLDecisionHistory } from '../../../../src/domain/services/hitl-queue'
+import { listHITLQueue, getHITLDecisionHistory } from '@/domain/services/hitl-queue'
 
 describe('Phase 4 RED: HITL Queue Visibility', () => {
   it('lists pending HITL requests for operator', () => {

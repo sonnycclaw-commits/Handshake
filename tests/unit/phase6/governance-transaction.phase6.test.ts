@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { createQuorumRequest, submitQuorumDecision, getQuorumRequestById, upsertQuorumRequest } from '../../../../src/domain/services/quorum-hitl'
-import { processGovernanceDecision } from '../../../../src/domain/services/governance-transaction'
+import { createQuorumRequest, submitQuorumDecision, getQuorumRequestById, upsertQuorumRequest } from '@/domain/services/quorum-hitl'
+import { processGovernanceDecision } from '@/domain/services/governance-transaction'
 
 describe('Phase 6 R4: Governance transaction boundary', () => {
   it('commits decision + lineage append together when append succeeds', () => {

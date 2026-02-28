@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { createManifest } from '../../../../src/domain/services/create-manifest'
-import { signManifest } from '../../../../src/domain/services/sign-manifest'
-import { verifyManifestSignature } from '../../../../src/domain/services/verify-manifest-signature'
-import { sanitizeResponse } from '../../../../src/domain/services/response-sanitization'
-import { ErrorCode } from '../../../../src/domain/value-objects/error-code'
-import { LogLevel } from '../../../../src/domain/value-objects/log-level'
+import { createManifest } from '@/domain/services/create-manifest'
+import { signManifest } from '@/domain/services/sign-manifest'
+import { verifyManifestSignature } from '@/domain/services/verify-manifest-signature'
+import { sanitizeResponse } from '@/domain/services/response-sanitization'
+import { ErrorCode } from '@/domain/value-objects/error-code'
+import { LogLevel } from '@/domain/value-objects/log-level'
 import {
   ManifestError,
   SignatureError,
   ValidationError,
   SecurityError
-} from '../../../../src/domain/errors'
+} from '@/domain/errors'
 import {
   ErrorTestBuilder,
   createTestLogger,

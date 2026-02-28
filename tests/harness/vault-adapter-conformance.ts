@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import type { VaultAdapter, VaultConfig, ExecutionContext, TransactionAction } from '../../src/ports/types'
+import type { VaultAdapter, VaultConfig, ExecutionContext, TransactionAction } from '@/ports/types'
 
 type AdapterFactory<T extends VaultAdapter> = () => T
 

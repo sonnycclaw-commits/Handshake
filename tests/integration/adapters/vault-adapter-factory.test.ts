@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createVaultAdapter } from '../../../src/adapters/vault'
+import { createVaultAdapter } from '@/adapters/vault'
 
 describe('Vault Adapter Factory', () => {
   it('creates in-memory adapter for in-memory config', () => {

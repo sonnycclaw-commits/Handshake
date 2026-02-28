@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { AuditEntry } from '../../../../src/domain/entities/audit-entry'
+import { AuditEntry } from '@/domain/entities/audit-entry'
 
 /**
  * AuditEntry Tests

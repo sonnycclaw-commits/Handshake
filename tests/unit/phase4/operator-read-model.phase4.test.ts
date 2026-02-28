@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildOperatorReadModel } from '../../../../src/domain/services/operator-read-model'
+import { buildOperatorReadModel } from '@/domain/services/operator-read-model'
 
 describe('Phase 4 RED: Operator Read Model', () => {
   it('builds consolidated operator timeline with audit+hitl status', () => {

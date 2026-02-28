@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { InMemoryAuditLog } from '../../../src/domain/services/audit-log'
-import { AuditEntry } from '../../../src/domain/entities/audit-entry'
-import { createAuditEntry } from '../../../src/domain/services/create-audit-entry'
-import { sanitizeResponse } from '../../../src/domain/services/response-sanitization'
+import { InMemoryAuditLog } from '@/domain/services/audit-log'
+import { AuditEntry } from '@/domain/entities/audit-entry'
+import { createAuditEntry } from '@/domain/services/create-audit-entry'
+import { sanitizeResponse } from '@/domain/services/response-sanitization'
 
 /**
  * Transaction Flow Integration Tests

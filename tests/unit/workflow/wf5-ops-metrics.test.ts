@@ -3,7 +3,7 @@ import {
   incrWF5Metric,
   getWF5MetricsSnapshot,
   evaluateWF5SLOs,
-} from '../../../../src/domain/services/wf5-ops-metrics'
+} from '@/domain/services/wf5-ops-metrics'
 
 describe('WF5 Ops Metrics + SLOs (C7)', () => {
   it('records counters for wf5 metrics', async () => {

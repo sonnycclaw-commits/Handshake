@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { executePrivilegedAction } from '../../../../src/use-cases/execute-privileged-action'
-import { submitRequest } from '../../../../src/domain/services/request-workflow'
-import type { VaultAdapter } from '../../../../src/ports/types'
+import { executePrivilegedAction } from '@/use-cases/execute-privileged-action'
+import { submitRequest } from '@/domain/services/request-workflow'
+import type { VaultAdapter } from '@/ports/types'
 
 class MockVault implements VaultAdapter {
   readonly name = 'mock-vault'

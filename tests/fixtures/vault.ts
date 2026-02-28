@@ -9,7 +9,7 @@ import type {
   CredentialMetadata,
   TransactionAction,
   ExecutionContext
-} from '../../../src/ports/types'
+} from '@/ports/types'
 
 // ============================================================
 // VALID CONFIGS

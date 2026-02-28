@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { sanitizeResponse } from '../../../../src/domain/services/response-sanitization'
-import { DetectionResult } from '../../../../src/domain/value-objects/detection-result'
-import { SensitiveDataPattern } from '../../../../src/domain/value-objects/sensitive-data-pattern'
+import { sanitizeResponse } from '@/domain/services/response-sanitization'
+import { DetectionResult } from '@/domain/value-objects/detection-result'
+import { SensitiveDataPattern } from '@/domain/value-objects/sensitive-data-pattern'
 
 const toSubscriptDigits = (input: string): string =>
   input.replace(/\d/g, d => String.fromCharCode(0x2080 + Number(d)))

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { Tier } from '../../../../src/domain/value-objects/tier'
+import { Tier } from '@/domain/value-objects/tier'
 
 describe('Tier', () => {
   it('exposes Tier.TIER_0 with level 0 and name "Auto-approved"', () => {

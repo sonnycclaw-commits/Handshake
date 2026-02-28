@@ -4,8 +4,8 @@ import {
   getQuorumRequestById,
   submitQuorumDecision,
   upsertQuorumRequest
-} from '../../src/domain/services/quorum-hitl'
-import { processGovernanceDecision } from '../../src/domain/services/governance-transaction'
+} from '@/domain/services/quorum-hitl'
+import { processGovernanceDecision } from '@/domain/services/governance-transaction'
 
 describe('Phase 6 Integration: governance atomicity under retry/failure', () => {
   it('remains fail-closed across retry after lineage failure', () => {

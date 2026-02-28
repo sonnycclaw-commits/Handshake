@@ -7,7 +7,7 @@ import {
   revokeOnboarding,
   getOnboardingAuditEvents,
   getTimeToFirstTrustProofMs,
-} from '../../../../src/domain/services/onboarding-workflow'
+} from '@/domain/services/onboarding-workflow'
 
 describe('WF-00 RED: onboarding first trust proof contract', () => {
   it('T-ONB-001: completes >=1 policy-governed guided action with trust proof under TTFTP budget', () => {

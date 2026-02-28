@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { resolvePolicyInheritance } from '../../../../src/domain/services/policy-inheritance'
+import { resolvePolicyInheritance } from '@/domain/services/policy-inheritance'
 
 describe('Phase 6 RED: Policy Inheritance', () => {
   it('resolves child policy with stricter-wins strategy', () => {

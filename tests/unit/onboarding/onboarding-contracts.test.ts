@@ -7,7 +7,7 @@ import {
   getOnboardingProgress,
   getOnboardingAuditExport,
   getTimeToFirstTrustProofMs,
-} from '../../../../src/domain/services/onboarding-workflow'
+} from '@/domain/services/onboarding-workflow'
 
 describe('Onboarding contract coverage', () => {
   it('T-ONB-006: emits machine-readable policy envelope', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createQuorumRequest } from '../../../../src/domain/services/quorum-hitl'
+import { createQuorumRequest } from '@/domain/services/quorum-hitl'
 
 describe('Phase 6 A3: quorum runtime determinism', () => {
   it('uses injected clock/id providers when supplied', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { evaluatePolicy } from '../../src/domain/services/policy-evaluator'
-import { createHITLRequest, approveHITL, timeoutHITL } from '../../src/domain/services/hitl-workflow'
+import { evaluatePolicy } from '@/domain/services/policy-evaluator'
+import { createHITLRequest, approveHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
 
 describe('Policy + HITL Integration (phase 3)', () => {
   it('escalates boundary request and allows after approval', async () => {

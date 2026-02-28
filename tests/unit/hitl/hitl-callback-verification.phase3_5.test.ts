@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { verifyAndApplyHITLCallback } from '../../../../src/domain/services/hitl-callback-verification'
+import { verifyAndApplyHITLCallback } from '@/domain/services/hitl-callback-verification'
 
 describe('Phase 3.5 RED: HITL Callback Verification', () => {
   it('rejects unauthorized callback actor', async () => {

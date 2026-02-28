@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '../../../../src/domain/services/request-workflow'
+import { submitRequest } from '@/domain/services/request-workflow'
 
 describe('Request Reason Codes RED (unit)', () => {
   it('returns standardized security_* reason code for bypass', async () => {

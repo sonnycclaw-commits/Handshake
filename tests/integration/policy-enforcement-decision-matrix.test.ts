@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { evaluatePolicy } from '../../src/domain/services/policy-evaluator'
+import { evaluatePolicy } from '@/domain/services/policy-evaluator'
 
 describe('Policy Enforcement Decision Matrix', () => {
   it('allows in-policy request at tier1', () => {

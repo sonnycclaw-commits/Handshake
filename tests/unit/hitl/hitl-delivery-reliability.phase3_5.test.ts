@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { deliverHITLNotification } from '../../../../src/domain/services/hitl-delivery'
+import { deliverHITLNotification } from '@/domain/services/hitl-delivery'
 
 describe('Phase 3.5 RED: HITL Delivery Reliability', () => {
   it('retries on transient delivery failures', async () => {

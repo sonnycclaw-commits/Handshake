@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { InMemoryVault } from '../../../src/adapters/vault/in-memory-vault'
+import { InMemoryVault } from '@/adapters/vault/in-memory-vault'
 import { runVaultAdapterConformanceSuite } from '../../harness/vault-adapter-conformance'
-import type { VaultConfig, ExecutionContext, TransactionAction } from '../../../src/ports/types'
+import type { VaultConfig, ExecutionContext, TransactionAction } from '@/ports/types'
 
 const validConfig: VaultConfig = { type: 'in-memory', credentials: {} }
 const invalidConfig: VaultConfig = { type: '1password', credentials: {} }

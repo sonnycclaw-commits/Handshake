@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { createQuorumRequest } from '../../../../src/domain/services/quorum-hitl'
-import { submitGovernanceDecision } from '../../../../src/domain/services/governance-transaction'
-import { getGovernanceLineageByDecisionId } from '../../../../src/domain/services/governance-audit-lineage'
+import { createQuorumRequest } from '@/domain/services/quorum-hitl'
+import { submitGovernanceDecision } from '@/domain/services/governance-transaction'
+import { getGovernanceLineageByDecisionId } from '@/domain/services/governance-audit-lineage'
 
 describe('Phase 6 A1: governance canonical write path', () => {
   it('writes decision and lineage through submitGovernanceDecision', () => {

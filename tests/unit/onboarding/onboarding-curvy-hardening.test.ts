@@ -4,7 +4,7 @@ import {
   selectOnboardingPolicy,
   evaluateGuidedAction,
   getOnboardingAuditEvents,
-} from '../../../../src/domain/services/onboarding-workflow'
+} from '@/domain/services/onboarding-workflow'
 
 describe('Onboarding curvy hardening', () => {
   it('denies semantic bypass: non-payment action carrying payment-like fields', () => {

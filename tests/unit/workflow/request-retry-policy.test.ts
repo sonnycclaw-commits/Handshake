@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { getRetryPolicyForReason } from '../../../../src/domain/services/request-retry-policy'
+import { getRetryPolicyForReason } from '@/domain/services/request-retry-policy'
 
 describe('Request Retry Policy', () => {
   it('fails closed for unknown reason codes', () => {

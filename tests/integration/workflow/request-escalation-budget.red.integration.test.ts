@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '../../../../src/domain/services/request-workflow'
+import { submitRequest } from '@/domain/services/request-workflow'
 
 describe('Request Workflow RED (escalation budget)', () => {
   it('preserves low-risk auto path while throttling excessive escalations', async () => {

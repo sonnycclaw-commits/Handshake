@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '../../../../src/domain/services/request-workflow'
+import { submitRequest } from '@/domain/services/request-workflow'
 
 describe('Request Workflow RED (sensitive downgrade defense)', () => {
   it('ignores low-risk self-label when payload indicates sensitive operation', async () => {

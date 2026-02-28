@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '../../../../src/domain/services/request-workflow'
+import { submitRequest } from '@/domain/services/request-workflow'
 
 describe('Request Workflow RED (escalation flood control)', () => {
   it('throttles repeated escalations from same agent/principal tuple', async () => {

@@ -1,5 +1,5 @@
-import type { Manifest } from '../../src/domain/entities/manifest'
-import type { CredentialRef } from '../../src/domain/value-objects/credential-ref'
+import type { Manifest } from '@/domain/entities/manifest'
+import type { CredentialRef } from '@/domain/value-objects/credential-ref'
 
 export const baseCredentials: CredentialRef[] = [
   {

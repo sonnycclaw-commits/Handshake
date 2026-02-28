@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { SignedManifest } from '../../../../src/domain/entities/signed-manifest'
-import { Manifest } from '../../../../src/domain/entities/manifest'
-import { CredentialType } from '../../../../src/domain/value-objects/credential-type'
-import { CredentialId } from '../../../../src/domain/value-objects/credential-id'
-import { Tier } from '../../../../src/domain/value-objects/tier'
+import { SignedManifest } from '@/domain/entities/signed-manifest'
+import { Manifest } from '@/domain/entities/manifest'
+import { CredentialType } from '@/domain/value-objects/credential-type'
+import { CredentialId } from '@/domain/value-objects/credential-id'
+import { Tier } from '@/domain/value-objects/tier'
 import { TEST_PRIVATE_KEY, TEST_PUBLIC_KEY, OTHER_PRIVATE_KEY, OTHER_PUBLIC_KEY } from '../../fixtures/keys'
-import { signManifest } from '../../../../src/domain/services/sign-manifest'
+import { signManifest } from '@/domain/services/sign-manifest'
 
 const makeManifest = () => new Manifest(
   'agent_1',

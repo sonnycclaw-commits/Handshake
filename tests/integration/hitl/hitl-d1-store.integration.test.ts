@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { setHITLStore, createHITLRequest, getHITLRequest, approveHITL } from '../../../src/domain/services/hitl-workflow'
-import { D1HITLStore } from '../../../src/adapters/persistence/d1-hitl-store'
-import { InMemoryHITLStore } from '../../../src/adapters/persistence/in-memory-hitl-store'
+import { setHITLStore, createHITLRequest, getHITLRequest, approveHITL } from '@/domain/services/hitl-workflow'
+import { D1HITLStore } from '@/adapters/persistence/d1-hitl-store'
+import { InMemoryHITLStore } from '@/adapters/persistence/in-memory-hitl-store'
 
 class FakeStmt {
   private sql: string

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, resolveRequestHitl, getRequestAudit } from '../../../../src/domain/services/request-workflow'
-import { getHITLRequest } from '../../../../src/domain/services/hitl-workflow'
+import { submitRequest, resolveRequestHitl, getRequestAudit } from '@/domain/services/request-workflow'
+import { getHITLRequest } from '@/domain/services/hitl-workflow'
 
 describe('Request Workflow RED (infra compatibility)', () => {
   it('uses existing HITL workflow for escalations', async () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { CredentialId } from '../../../../src/domain/value-objects/credential-id'
+import { CredentialId } from '@/domain/value-objects/credential-id'
 
 describe('CredentialId', () => {
   it('creates valid credential id from string', () => {

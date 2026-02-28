@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, authorizePrivilegedExecution } from '../../../../src/domain/services/request-workflow'
+import { submitRequest, authorizePrivilegedExecution } from '@/domain/services/request-workflow'
 
 describe('Request Workflow RED (decision artifact gate)', () => {
   it('RW-011: denies privileged execution without artifact', async () => {

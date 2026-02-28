@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { createHITLRequest, timeoutHITL } from '../../../src/domain/services/hitl-workflow'
-import { verifyAndApplyHITLCallback } from '../../../src/domain/services/hitl-callback-verification'
+import { createHITLRequest, timeoutHITL } from '@/domain/services/hitl-workflow'
+import { verifyAndApplyHITLCallback } from '@/domain/services/hitl-callback-verification'
 
 describe('HITL Delivery + Callback Sequence (phase 3.5)', () => {
   it('accepts valid callback and transitions pending -> approved', async () => {

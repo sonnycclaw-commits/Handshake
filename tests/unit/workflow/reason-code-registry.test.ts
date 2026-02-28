@@ -5,7 +5,7 @@ import {
   assertKnownReasonCode,
   classifyReasonCode,
   toResponseClass,
-} from '../../../../src/domain/constants/reason-codes'
+} from '@/domain/constants/reason-codes'
 
 describe('Reason Code Registry (C5)', () => {
   it('exposes versioned reason-code schema', () => {

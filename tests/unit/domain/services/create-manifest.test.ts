@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { createManifest } from '../../../../src/domain/services/create-manifest'
-import { CredentialType } from '../../../../src/domain/value-objects/credential-type'
-import { CredentialId } from '../../../../src/domain/value-objects/credential-id'
+import { createManifest } from '@/domain/services/create-manifest'
+import { CredentialType } from '@/domain/value-objects/credential-type'
+import { CredentialId } from '@/domain/value-objects/credential-id'
 
 const baseInput = {
   agentId: 'agent_123',

@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { InMemoryVault } from '../../../src/adapters/vault/in-memory-vault'
-import type { VaultConfig, TransactionAction, ExecutionContext } from '../../../src/ports/types'
+import { InMemoryVault } from '@/adapters/vault/in-memory-vault'
+import type { VaultConfig, TransactionAction, ExecutionContext } from '@/ports/types'
 
 const validInMemoryConfig: VaultConfig = {
   type: 'in-memory',

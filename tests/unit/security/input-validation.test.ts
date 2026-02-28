@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { createManifest } from '../../../../src/domain/services/create-manifest'
+import { createManifest } from '@/domain/services/create-manifest'
 import { oversizedManifestCredentials, largeManifestCredentials } from '../../fixtures/manifests'
 
 describe('Unicode Edge Cases', () => {

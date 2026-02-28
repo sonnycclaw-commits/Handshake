@@ -4,7 +4,7 @@ import {
   approveHITL,
   rejectHITL,
   timeoutHITL
-} from '../../../../src/domain/services/hitl-workflow'
+} from '@/domain/services/hitl-workflow'
 
 describe('HITL Workflow (phase 3)', () => {
   it('creates pending request with expiry', async () => {

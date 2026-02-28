@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { canonicalizeObject as canonicalize } from '../../../../src/domain/serialization/canonicalize'
+import { canonicalizeObject as canonicalize } from '@/domain/serialization/canonicalize'
 
 describe('Canonicalization (Standard Library)', () => {
   it('produces deterministic output for same object', () => {

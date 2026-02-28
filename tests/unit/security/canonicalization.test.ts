@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { canonicalizeManifest } from '../../../../src/domain/services/manifest-canonicalization'
-import { Manifest } from '../../../../src/domain/entities/manifest'
-import { CredentialType } from '../../../../src/domain/value-objects/credential-type'
-import { CredentialId } from '../../../../src/domain/value-objects/credential-id'
-import { Tier } from '../../../../src/domain/value-objects/tier'
+import { canonicalizeManifest } from '@/domain/services/manifest-canonicalization'
+import { Manifest } from '@/domain/entities/manifest'
+import { CredentialType } from '@/domain/value-objects/credential-type'
+import { CredentialId } from '@/domain/value-objects/credential-id'
+import { Tier } from '@/domain/value-objects/tier'
 
 const makeManifest = (credentialsOrder: 'ab' | 'ba' = 'ab') => {
   const creds = [

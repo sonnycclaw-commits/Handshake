@@ -1,7 +1,7 @@
 import { describe, beforeAll, afterAll, it, expect } from 'vitest'
 import { runVaultAdapterConformanceSuite } from '../../harness/vault-adapter-conformance'
-import type { VaultConfig, ExecutionContext, TransactionAction } from '../../../src/ports/types'
-import { EnvVault } from '../../../src/adapters/vault/env-vault'
+import type { VaultConfig, ExecutionContext, TransactionAction } from '@/ports/types'
+import { EnvVault } from '@/adapters/vault/env-vault'
 
 const ENV_KEY = 'HANDSHAKE_VAULT_CREDENTIALS_JSON'
 

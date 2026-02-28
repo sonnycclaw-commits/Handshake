@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { createAuditEntry, type TransactionResult } from '../../../../src/domain/services/create-audit-entry'
+import { createAuditEntry, type TransactionResult } from '@/domain/services/create-audit-entry'
 
 /**
  * createAuditEntry Tests
