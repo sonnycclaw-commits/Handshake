@@ -1,0 +1,64 @@
+# WF5 Metrics Spec (H7/H8)
+
+Status: Draft v1
+Date: 2026-02-28
+
+## Objective
+Define deterministic, auditable governance metrics from canonical decision events.
+
+## Metrics (v1)
+
+### 1) UAIR — Unsafe Action Intercept Rate
+- Definition: `(denied + escalated) risky_requests / risky_requests`
+- Numerator class: requests with decision in `{deny, escalate}` and risk tier in `{high,critical}`
+- Denominator class: all requests with risk tier in `{high,critical}`
+
+### 2) AIRT — Agent Incident Response Time
+- Definition: `terminal_decision_ts - incident_detected_ts`
+- Computed for escalated high-risk incidents
+- Report P50/P95 by period
+
+### 3) GAR — Governed Autonomy Ratio
+- Definition: `autonomous_actions_with_valid_lineage / total_autonomous_actions`
+- Valid lineage requires known reason code + immutable terminal state evidence
+
+### 4) TCA — Trust Cost per Action
+- Definition: `(human_minutes + compute_cost_units + escalation_overhead_units) / governed_actions`
+- Unitized approximation first; real cost model later
+
+## Event Contract
+Canonical metrics event fields:
+- `event_id` (string, unique, idempotency key)
+- `request_id` (string)
+- `timestamp_ms` (number)
+- `decision` (`allow|deny|escalate`)
+- `reason_code` (known code)
+- `reason_family` (`trust_context|policy|security|hitl|adapter|unknown`)
+- `risk_tier` (`low|medium|high|critical|unknown`)
+- `is_terminal` (boolean)
+- `has_valid_lineage` (boolean)
+- `incident_detected_ts_ms` (nullable number)
+- `terminal_decision_ts_ms` (nullable number)
+- `human_minutes` (nullable number)
+- `compute_cost_units` (nullable number)
+- `escalation_overhead_units` (nullable number)
+
+## Invariants
+1. Append-only metrics events.
+2. Rollups reproducible from events.
+3. Unknown reason codes not dropped (bucketed as `unknown`).
+4. No PII in metric dimensions.
+5. Schema version embedded in events and rollups.
+
+## Query Surfaces (H8)
+- `GET /metrics/summary?window=24h|7d|30d`
+- `GET /metrics/series?metric=UAIR|AIRT|GAR|TCA&bucket=hour|day`
+- `GET /metrics/reasons?window=7d`
+
+## Performance Targets
+- Summary query p95 < 250ms
+- Series query p95 < 300ms (30d daily buckets)
+
+## Versioning
+- `METRICS_SCHEMA_VERSION = v1`
+- Rollups store schema + projector version for audit replay
