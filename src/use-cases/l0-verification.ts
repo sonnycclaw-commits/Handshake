@@ -255,7 +255,7 @@ export class L0VerificationUseCases {
         status: 401,
         body: {
           status: 'error',
-          error: principal.reasonCode,
+          error: principal.reasonCode || 'security_token_invalid',
           message: 'Clerk identity verification failed'
         }
       }

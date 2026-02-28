@@ -29,6 +29,12 @@ export const KNOWN_REASON_CODES = [
   'security_artifact_state_not_authorized',
   'security_artifact_authorized',
 
+  // clerk identity
+  'security_missing_authorization_header',
+  'security_identity_claim_missing',
+  'security_token_invalid',
+  'security_identity_provider_not_configured',
+
   // hitl
   'hitl_sensitive_ambiguous_escalated',
   'hitl_boundary_escalated',

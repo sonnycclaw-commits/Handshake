@@ -1,4 +1,5 @@
 import { verifyToken } from '@clerk/backend'
+import { isKnownReasonCode } from '../../domain/constants/reason-codes'
 import type { IdentityProvider, VerifyPrincipalResult } from '../../ports/identity-provider'
 
 type ClerkIdentityConfig = {
@@ -12,6 +13,10 @@ export class ClerkIdentityProvider implements IdentityProvider {
   constructor(private readonly config: ClerkIdentityConfig) {}
 
   async verifyAuthorizationHeader(authorizationHeader?: string): Promise<VerifyPrincipalResult> {
+    if (!this.config.jwtKey && !this.config.secretKey) {
+      return { ok: false, reasonCode: 'security_identity_provider_not_configured' }
+    }
+
     if (!authorizationHeader?.startsWith('Bearer ')) {
       return { ok: false, reasonCode: 'security_missing_authorization_header' }
     }
@@ -47,4 +52,8 @@ export class ClerkIdentityProvider implements IdentityProvider {
       return { ok: false, reasonCode: 'security_token_invalid' }
     }
   }
+}
+
+export function asKnownReasonCode(code: string): string {
+  return isKnownReasonCode(code) ? code : 'security_token_invalid'
 }
