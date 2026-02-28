@@ -211,6 +211,22 @@ export class L0VerificationUseCases {
     if (this.identityMode === 'clerk' && this.deps.identityProvider) {
       const principal = await this.deps.identityProvider.verifyAuthorizationHeader(input.authorizationHeader)
       if (principal.ok) {
+        const ownership = await this.deps.identityStore.getActiveLinkageByAgentIdAndOwner(
+          input.agentId,
+          'clerk',
+          principal.principal.ownerId,
+        )
+        if (!ownership) {
+          return {
+            status: 403,
+            body: {
+              status: 'error',
+              error: 'security_identity_claim_missing',
+              message: 'Agent is not linked to authenticated Clerk principal'
+            }
+          }
+        }
+
         const linkage = await this.deps.identityStore.getActiveLinkageWithTrustByAgentId(input.agentId)
         if (!linkage) {
           return {

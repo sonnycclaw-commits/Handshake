@@ -42,6 +42,26 @@ export class D1IdentityStore implements IdentityStore {
     return row ? mapLinkageRow(row) : null
   }
 
+  async getActiveLinkageByAgentIdAndOwner(
+    agentId: string,
+    ownerProvider: string,
+    ownerId: string
+  ): Promise<LinkageRecord | null> {
+    const row = await this.db
+      .prepare(`
+        SELECT *
+        FROM linkages
+        WHERE agent_id = ?
+          AND owner_provider = ?
+          AND owner_id = ?
+          AND revoked_at IS NULL
+      `)
+      .bind(agentId, ownerProvider, ownerId)
+      .first<LinkageRow>()
+
+    return row ? mapLinkageRow(row) : null
+  }
+
   async getActiveLinkageWithTrustByAgentId(agentId: string): Promise<LinkageWithTrust | null> {
     const row = await this.db
       .prepare(`

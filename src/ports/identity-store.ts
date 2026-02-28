@@ -34,6 +34,7 @@ export interface CreateLinkageInput {
 export interface IdentityStore {
   getActiveLinkageByAgentId(agentId: string): Promise<LinkageRecord | null>
   getActiveLinkageWithTrustByAgentId(agentId: string): Promise<LinkageWithTrust | null>
+  getActiveLinkageByAgentIdAndOwner(agentId: string, ownerProvider: string, ownerId: string): Promise<LinkageRecord | null>
   createLinkage(input: CreateLinkageInput): Promise<void>
   incrementAgentsOwned(ownerProvider: string, ownerId: string): Promise<void>
 }

@@ -34,6 +34,10 @@ function validateIdentityConfig(env: Bindings): void {
   if (!env.CLERK_JWT_KEY && !env.CLERK_SECRET_KEY) {
     throw new Error('Clerk mode requires CLERK_JWT_KEY or CLERK_SECRET_KEY')
   }
+
+  if (!env.CLERK_AUTHORIZED_PARTIES || !env.CLERK_AUTHORIZED_PARTIES.trim()) {
+    throw new Error('Clerk mode requires CLERK_AUTHORIZED_PARTIES')
+  }
 }
 
 
