@@ -44,6 +44,49 @@ export interface RequestWorkflowStore {
   appendLineage(requestId: string, event: Record<string, unknown>): Promise<void>
   getLineage(requestId: string): Promise<Array<Record<string, unknown>>>
 
+  appendMetricsEvent(event: {
+    eventId: string
+    requestId: string
+    timestampMs: number
+    decision: RequestDecision
+    reasonCode: string
+    reasonFamily: string
+    riskTier: string
+    isTerminal: boolean
+    hasValidLineage: boolean
+    incidentDetectedTsMs?: number
+    terminalDecisionTsMs?: number
+    humanMinutes?: number
+    computeCostUnits?: number
+    escalationOverheadUnits?: number
+    schemaVersion: string
+    projectorVersion: string
+  }): Promise<void>
+
+  getMetricsEventsInWindow(startMs: number, endMs: number): Promise<Array<Record<string, unknown>>>
+
+  upsertMetricsRollupHourly(row: {
+    bucketStartMs: number
+    metricName: string
+    dimensionKey: string
+    valueReal: number
+    sampleCount: number
+    schemaVersion: string
+    projectorVersion: string
+  }): Promise<void>
+
+  upsertMetricsRollupDaily(row: {
+    bucketStartMs: number
+    metricName: string
+    dimensionKey: string
+    valueReal: number
+    sampleCount: number
+    schemaVersion: string
+    projectorVersion: string
+  }): Promise<void>
+
+  getMetricsRollups(metricName: string, bucket: 'hour' | 'day', startMs: number, endMs: number): Promise<Array<Record<string, unknown>>>
+
   getEscalationHistory(key: string): Promise<number[]>
   setEscalationHistory(key: string, timestamps: number[]): Promise<void>
 }

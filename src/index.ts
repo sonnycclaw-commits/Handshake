@@ -6,6 +6,8 @@ import { KvStateStore } from './adapters/persistence/kv-state-store';
 import { JwtCredentialService } from './adapters/crypto/jwt-credential-service';
 import { L0VerificationUseCases } from './use-cases/l0-verification';
 import { ClerkIdentityProvider } from './adapters/identity/clerk-identity-provider';
+import { D1RequestWorkflowStore } from './adapters/persistence/d1-request-workflow-store';
+import { computeMetricsSummary, METRICS_PROJECTOR_VERSION, METRICS_SCHEMA_VERSION } from './domain/services/wf5-metrics-projector';
 
 type Bindings = {
   DB: D1Database;
@@ -245,62 +247,191 @@ app.post('/verify-credential', async (c) => {
 });
 
 // ====================
+// METRICS ENDPOINTS (WF5 H8)
+// ====================
+
+function parseWindow(window: string | undefined): number {
+  switch (window) {
+    case '24h': return 24 * 60 * 60 * 1000
+    case '7d': return 7 * 24 * 60 * 60 * 1000
+    case '30d': return 30 * 24 * 60 * 60 * 1000
+    default: return 24 * 60 * 60 * 1000
+  }
+}
+
+app.get('/metrics/summary', async (c) => {
+  const now = Date.now()
+  const windowMs = parseWindow(c.req.query('window'))
+  const startMs = now - windowMs
+
+  const store = new D1RequestWorkflowStore(c.env.DB)
+  const events = await store.getMetricsEventsInWindow(startMs, now)
+  const summary = computeMetricsSummary(events as any)
+
+  return c.json({
+    window: c.req.query('window') || '24h',
+    schema_version: METRICS_SCHEMA_VERSION,
+    projector_version: METRICS_PROJECTOR_VERSION,
+    ...summary,
+  })
+})
+
+app.get('/metrics/series', async (c) => {
+  const metric = c.req.query('metric') || 'UAIR'
+  const bucket = (c.req.query('bucket') === 'day' ? 'day' : 'hour') as 'hour' | 'day'
+  const now = Date.now()
+  const startMs = now - parseWindow(c.req.query('window'))
+
+  const metricMap: Record<string, string> = {
+    UAIR: 'uair',
+    AIRT: 'airt_p95_ms',
+    GAR: 'gar',
+    TCA: 'tca',
+  }
+
+  const metricName = metricMap[String(metric).toUpperCase()] || 'uair'
+
+  const store = new D1RequestWorkflowStore(c.env.DB)
+  const rows = await store.getMetricsRollups(metricName, bucket, startMs, now)
+
+  return c.json({
+    metric: String(metric).toUpperCase(),
+    bucket,
+    schema_version: METRICS_SCHEMA_VERSION,
+    projector_version: METRICS_PROJECTOR_VERSION,
+    points: rows,
+  })
+})
+
+app.get('/metrics/reasons', async (c) => {
+  const now = Date.now()
+  const startMs = now - parseWindow(c.req.query('window'))
+
+  const store = new D1RequestWorkflowStore(c.env.DB)
+  const events = await store.getMetricsEventsInWindow(startMs, now)
+
+  const counts: Record<string, number> = {}
+  for (const e of events as any[]) {
+    const k = String(e.reasonFamily || 'unknown')
+    counts[k] = (counts[k] || 0) + 1
+  }
+
+  return c.json({
+    window: c.req.query('window') || '24h',
+    schema_version: METRICS_SCHEMA_VERSION,
+    reason_families: counts,
+  })
+})
+
+
+
+app.post('/metrics/project', async (c) => {
+  const now = Date.now()
+  const windowMs = parseWindow(c.req.query('window'))
+  const startMs = now - windowMs
+
+  const store = new D1RequestWorkflowStore(c.env.DB)
+  const events = await store.getMetricsEventsInWindow(startMs, now)
+  const summary = computeMetricsSummary(events as any)
+
+  const hourBucket = Math.floor(now / (60 * 60 * 1000)) * 60 * 60 * 1000
+  const dayBucket = Math.floor(now / (24 * 60 * 60 * 1000)) * 24 * 60 * 60 * 1000
+
+  const rows = [
+    { metricName: 'uair', valueReal: summary.uair },
+    { metricName: 'airt_p50_ms', valueReal: summary.airtP50Ms },
+    { metricName: 'airt_p95_ms', valueReal: summary.airtP95Ms },
+    { metricName: 'gar', valueReal: summary.gar },
+    { metricName: 'tca', valueReal: summary.tca },
+  ]
+
+  for (const r of rows) {
+    await store.upsertMetricsRollupHourly({
+      bucketStartMs: hourBucket,
+      metricName: r.metricName,
+      dimensionKey: 'all',
+      valueReal: r.valueReal,
+      sampleCount: events.length,
+      schemaVersion: METRICS_SCHEMA_VERSION,
+      projectorVersion: METRICS_PROJECTOR_VERSION,
+    })
+
+    await store.upsertMetricsRollupDaily({
+      bucketStartMs: dayBucket,
+      metricName: r.metricName,
+      dimensionKey: 'all',
+      valueReal: r.valueReal,
+      sampleCount: events.length,
+      schemaVersion: METRICS_SCHEMA_VERSION,
+      projectorVersion: METRICS_PROJECTOR_VERSION,
+    })
+  }
+
+  return c.json({
+    status: 'ok',
+    projected_events: events.length,
+    hour_bucket: hourBucket,
+    day_bucket: dayBucket,
+    metrics: summary,
+  })
+})
+
+// ====================
 // OAUTH HELPERS
 // ====================
 
-
 function generateRandomString(length: number): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
   let result = '';
+  const randomValues = new Uint8Array(length);
+  crypto.getRandomValues(randomValues);
   for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+    result += chars[randomValues[i] % chars.length];
   }
   return result;
 }
 
 async function generateCodeChallenge(verifier: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const hash = await crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode(...new Uint8Array(hash)))
+  const data = new TextEncoder().encode(verifier);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(digest)))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
 }
 
 function buildOAuthUrl(provider: string, state: string, codeChallenge: string, env: Bindings): string {
-  const redirectUri = `${env.ENVIRONMENT === 'production' ? 'https://handshake.dev' : 'http://localhost:8787'}/callback`;
-
   if (provider === 'google') {
     const params = new URLSearchParams({
       client_id: env.GOOGLE_CLIENT_ID,
-      redirect_uri: redirectUri,
+      redirect_uri: `${env.ENVIRONMENT === 'production' ? 'https://handshake.dev' : 'http://localhost:8787'}/callback`,
       response_type: 'code',
-      scope: 'openid email profile',
+      scope: 'openid profile email',
       state,
       code_challenge: codeChallenge,
-      code_challenge_method: 'S256'
+      code_challenge_method: 'S256',
+      access_type: 'offline',
+      prompt: 'consent'
     });
-    return `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+    return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
   }
 
   if (provider === 'github') {
     const params = new URLSearchParams({
       client_id: env.GITHUB_CLIENT_ID,
-      redirect_uri: redirectUri,
+      redirect_uri: `${env.ENVIRONMENT === 'production' ? 'https://handshake.dev' : 'http://localhost:8787'}/callback`,
       scope: 'read:user user:email',
       state,
-      allow_signup: 'true'
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256'
     });
-    return `https://github.com/login/oauth/authorize?${params}`;
+    return `https://github.com/login/oauth/authorize?${params.toString()}`;
   }
 
   throw new Error('Invalid provider');
 }
 
 async function exchangeCodeForToken(provider: string, code: string, codeVerifier: string, env: Bindings): Promise<any> {
-  const redirectUri = `${env.ENVIRONMENT === 'production' ? 'https://handshake.dev' : 'http://localhost:8787'}/callback`;
-
   if (provider === 'google') {
     const response = await fetch('https://oauth2.googleapis.com/token', {
       method: 'POST',
@@ -310,24 +441,29 @@ async function exchangeCodeForToken(provider: string, code: string, codeVerifier
         client_secret: env.GOOGLE_CLIENT_SECRET,
         code,
         code_verifier: codeVerifier,
-        redirect_uri: redirectUri,
-        grant_type: 'authorization_code'
+        grant_type: 'authorization_code',
+        redirect_uri: `${env.ENVIRONMENT === 'production' ? 'https://handshake.dev' : 'http://localhost:8787'}/callback`
       })
     });
+
     return response.json();
   }
 
   if (provider === 'github') {
     const response = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
         client_id: env.GITHUB_CLIENT_ID,
         client_secret: env.GITHUB_CLIENT_SECRET,
         code,
-        redirect_uri: redirectUri
+        code_verifier: codeVerifier
       })
     });
+
     return response.json();
   }
 
@@ -339,8 +475,7 @@ async function getUserProfile(provider: string, accessToken: string): Promise<an
     const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
-    const data: any = await response.json();
-    return { id: data.id, name: data.name, email: data.email };
+    return response.json();
   }
 
   if (provider === 'github') {
@@ -348,30 +483,32 @@ async function getUserProfile(provider: string, accessToken: string): Promise<an
       headers: { 'Authorization': `Bearer ${accessToken}` }
     });
     const data: any = await response.json();
-    return { id: String(data.id), name: data.login, email: data.email };
+    return {
+      id: String(data.id),
+      name: data.login,
+      email: data.email
+    };
   }
 
   throw new Error('Invalid provider');
 }
 
 function getOwnerDisplay(linkage: any): string {
-  if (linkage.privacy_level === 'anonymous') return 'Verified Owner';
-  if (linkage.privacy_level === 'pseudonymous') return linkage.owner_pseudonym || 'Anonymous';
-  return linkage.owner_display_name || 'Verified Owner';
+  if (linkage.privacy_level === 'anonymous') return 'Anonymous Verified';
+  if (linkage.privacy_level === 'pseudonymous') return linkage.owner_pseudonym || 'Verified User';
+  return linkage.owner_display_name || 'Verified User';
 }
 
 function computeVerificationLevel(linkage: any): string {
-  const trades = linkage.successful_trades || 0;
-  const reputation = linkage.reputation_score || 0;
-  if (trades >= 50 && reputation >= 0.9) return 'trusted';
-  if (trades >= 10) return 'confirmed';
+  if (linkage.reputation_score >= 80) return 'high';
+  if (linkage.reputation_score >= 50) return 'medium';
   return 'basic';
 }
 
 function computeBadge(linkage: any): string {
   const level = computeVerificationLevel(linkage);
-  if (level === 'trusted') return '🤝★ trusted';
-  if (level === 'confirmed') return '🤝✓ confirmed';
+  if (level === 'high') return '🤝 verified (trusted)';
+  if (level === 'medium') return '🤝 verified (established)';
   return '🤝 verified';
 }
 
