@@ -16,7 +16,7 @@
     "hono": "4.12.3",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18",
-    "wrangler": "^3.114.17"
+    "wrangler": "^4.69.0"
   },
   "dependencies": {
     "canonicalize": "^2.1.0"
