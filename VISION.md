@@ -337,3 +337,15 @@ Approvers -> HITL: M-of-N decisions
 Handshake -> Agent: approved|rejected
 Handshake -> Audit: governance trail
 ```
+
+
+## Execution Proof (30-Day Program Outcome)
+
+The 30-day hardening program (W1-W4) completed with enforceable rails, not narrative claims:
+
+- Legacy transitional risk paths removed/guarded.
+- Least-privilege read scope hierarchy operational.
+- Security/replay/tenant-boundary observability + alert-to-action loop established.
+- Release discipline enforced via migration/env/invariant/checklist/watch gates in CI.
+
+Residual risks are now operational calibration and anti-drift hygiene (documented in post-program smell test), not missing trust-boundary architecture.

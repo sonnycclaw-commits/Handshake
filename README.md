@@ -62,3 +62,16 @@ Handshake evolves, but v1 integration surface should remain stable:
 - OpenAPI-governed request/response schemas
 
 For compatibility and change policy, see `COMPATIBILITY.md`.
+
+
+## Program Status (30-Day Scale Program)
+
+Status: **Complete (W1-W4)**
+
+- W1: Transitional risk surface elimination
+- W2: Least-privilege scope model (`self|tenant|any`)
+- W3: Production observability + deterministic alert/runbook rails
+- W4: Release discipline + environment safety + invariants + 24h watch hooks
+
+Post-program smell assessment:
+- `docs/workflow/POST-30DAY-SMELL-TEST-2026-03-01.md`
