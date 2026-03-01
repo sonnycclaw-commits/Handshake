@@ -75,3 +75,14 @@ Status: **Complete (W1-W4)**
 
 Post-program smell assessment:
 - `docs/workflow/POST-30DAY-SMELL-TEST-2026-03-01.md`
+
+
+## Layman Docs
+
+Plain-English references:
+- `docs/layman/01-what-is-handshake.md`
+- `docs/layman/02-agent-identity.md`
+- `docs/layman/03-permissions-and-limits.md`
+- `docs/layman/04-approvals-and-risk.md`
+- `docs/layman/05-errors-and-safety.md`
+- `docs/layman/06-what-backend-can-do.md`
