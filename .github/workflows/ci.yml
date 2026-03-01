@@ -52,6 +52,12 @@ jobs:
       - name: Schema preflight
         run: npm run check:schema-preflight
 
+      - name: Release readiness
+        run: npm run check:release-readiness
+
+      - name: Environment matrix safety
+        run: npm run check:env-matrix
+
       - name: SDK drift check
         run: npm run check:sdk-drift
 
