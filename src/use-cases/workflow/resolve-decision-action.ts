@@ -1,6 +1,7 @@
 import { D1RequestWorkflowStore } from '../../adapters/persistence/d1-request-workflow-store'
 import { createReplayGuard } from '../../core/replay-guard'
 import { statusForReasonCode, toStructuredError, isRecord } from '../../core/workflow'
+import { incrWF5Metric } from '../../domain/services/wf5-ops-metrics'
 import type { RequestWorkflowService } from '../../domain/services/request-workflow.service.types'
 import type { AppEnv } from '../../core/types'
 
@@ -26,9 +27,13 @@ export async function resolveDecisionActionUseCase(input: {
     if (!replay.ok) {
       if (replay.reason === 'replay_detected') {
         const reasonCode = 'security_replay_detected'
+        await incrWF5Metric('wf5_replay_detected_total', 1, { scope: 'workflow_idempotency' })
+        await incrWF5Metric('wf5_security_denial_total', 1, { reason: reasonCode, endpoint: 'workflow_decision_action', class: 'replay' })
         return { ok: false as const, status: statusForReasonCode(reasonCode), body: toStructuredError(reasonCode, 'Idempotency key replay detected') }
       }
       const reasonCode = 'security_replay_guard_unavailable'
+      await incrWF5Metric('wf5_replay_guard_unavailable_total', 1, { scope: 'workflow_idempotency' })
+      await incrWF5Metric('wf5_security_denial_total', 1, { reason: reasonCode, endpoint: 'workflow_decision_action', class: 'replay' })
       return { ok: false as const, status: statusForReasonCode(reasonCode), body: toStructuredError(reasonCode, 'Replay guard unavailable') }
     }
   }

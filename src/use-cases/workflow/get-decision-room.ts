@@ -3,6 +3,7 @@ import { D1RequestWorkflowStore } from '../../adapters/persistence/d1-request-wo
 import { D1HITLStore } from '../../adapters/persistence/d1-hitl-store'
 import { classifyReasonCode } from '../../domain/constants/reason-codes'
 import { mapTierToRiskTier, statusForReasonCode, toStructuredError } from '../../core/workflow'
+import { incrWF5Metric } from '../../domain/services/wf5-ops-metrics'
 
 export async function getDecisionRoomUseCase(input: { env: { DB: D1Database }; requestId: string; identityEnvelope: { principalId: string; scopes?: string[]; tenantId?: string } }) {
   const store = new D1RequestWorkflowStore(input.env.DB)
@@ -15,6 +16,7 @@ export async function getDecisionRoomUseCase(input: { env: { DB: D1Database }; r
   const authz = authorizeWorkflowReadAccess({ identity: input.identityEnvelope, record: { principalId: record.principalId, tenantId: (record as any).tenantId } })
   if (!authz.allowed) {
     const reasonCode = authz.reasonCode
+    await incrWF5Metric('wf5_security_denial_total', 1, { reason: reasonCode, endpoint: 'workflow_get_decision_room', class: 'read_authz' })
     return { ok: false as const, status: statusForReasonCode(reasonCode), body: toStructuredError(reasonCode, 'Read access denied') }
   }
 

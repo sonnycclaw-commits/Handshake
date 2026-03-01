@@ -9,6 +9,9 @@ export type WF5MetricName =
   | 'wf5_escalation_throttled_total'
   | 'wf5_artifact_gate_denied_total'
   | 'wf5_artifact_gate_allowed_total'
+  | 'wf5_security_denial_total'
+  | 'wf5_replay_detected_total'
+  | 'wf5_replay_guard_unavailable_total'
 
 export type WF5MetricSample = {
   name: WF5MetricName
