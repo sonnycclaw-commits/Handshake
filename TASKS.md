@@ -400,10 +400,11 @@ AP6 W5 hardening evidence (2026-03-01):
 
 ### Week 3 — Production Observability & Alerts
 
-- [ ] W3-C1 Emit structured telemetry for key denial/replay failures
-- [ ] W3-C2 Build baseline dashboards (reason trend, endpoint failure, replay events)
-- [ ] W3-C3 Configure alerts for replay guard unavailable, denial spikes, tenant mismatch spikes
-- [ ] W3-C4 Link each alert to runbook actions in OPERATIONS
+- [ ] W3-C0 Premortem lock: W3 constraints + blast-radius notes captured (one-slice commits, no gate bypass)
+- [x] W3-C1 Emit structured telemetry for key denial/replay failures
+- [x] W3-C2 Build baseline dashboards (reason trend, endpoint failure, replay events)
+- [x] W3-C3 Configure alerts for replay guard unavailable, denial spikes, tenant mismatch spikes
+- [x] W3-C4 Link each alert to runbook actions in OPERATIONS
 
 **Acceptance checks:**
 - [ ] W3-AC1 Critical authz/replay failures are observable in real time
@@ -447,3 +448,66 @@ AP6 W5 hardening evidence (2026-03-01):
 - [ ] Migration-safe release pipeline active
 - [ ] Deterministic behavior proven by invariant tests
 - [ ] Canonical docs updated with no integrator/operator ambiguity
+
+
+W3-C1 evidence (2026-03-01):
+- Added structured telemetry counters: `wf5_security_denial_total`, `wf5_replay_detected_total`, `wf5_replay_guard_unavailable_total`.
+- Instrumented read-authz denial paths on protected workflow read routes and replay denial/unavailable paths on decision action route.
+- Added integration coverage: `tests/integration/workflow/w3-structured-telemetry.integration.test.ts`.
+- Verification:
+  - `npm test -- tests/integration/workflow/w3-structured-telemetry.integration.test.ts` ✅
+  - `npm run test:prod-gate` ✅
+  - `npm run check:openapi` ✅
+
+
+W3-C2 evidence (2026-03-01):
+- Metrics summary contract enriched with denial/replay trend counters: `totalEvents`, `denialEvents`, `replayDetectedEvents`, `replayGuardUnavailableEvents`.
+- Metrics series endpoint now enforces explicit allowed metric query set and blocks invalid values with deterministic error (`invalid_metric_query`, 400, `responseClass=blocked`).
+- OpenAPI tightened for metrics contracts (`MetricsSummary` typed fields + `/metrics/series` metric enum).
+- Dashboard/query contract test added: `tests/integration/workflow/w3-metrics-dashboard-contract.integration.test.ts`.
+- Verification:
+  - `npm test -- tests/integration/workflow/w3-metrics-dashboard-contract.integration.test.ts` ✅
+  - `npm run check:openapi` ✅
+  - `npm run test:prod-gate` ✅
+
+
+W3-C3 evidence (2026-03-01):
+- Extended WF5 SLO evaluator with deterministic alert rails for:
+  - `alert_replay_guard_unavailable`
+  - `alert_denial_spike`
+  - `alert_tenant_mismatch_spike`
+- Added new SLO inputs and derived rates:
+  - `securityDenialTotal`, `tenantMismatchDeniedTotal`, `replayGuardUnavailableTotal`
+  - `denialRate`, `tenantMismatchRate`, `replayGuardUnavailableCount`
+- Added C3 unit coverage: `tests/unit/workflow/wf5-ops-metrics.c3-alerts.test.ts`.
+- Updated integration alert test to include C3 counters and thresholds.
+- Updated metrics spec with explicit C3 alert threshold contract.
+- Verification:
+  - `npm test -- tests/unit/workflow/wf5-ops-metrics.test.ts tests/unit/workflow/wf5-ops-metrics.c3-alerts.test.ts tests/integration/workflow/wf5-ops-alerts.integration.test.ts` ✅
+  - `npm run test:prod-gate` ✅
+  - `npm run check:openapi` ✅
+
+
+W3-C4 evidence (2026-03-01):
+- Added explicit runbook mappings in `docs/OPERATIONS.md` for:
+  - `alert_replay_guard_unavailable`
+  - `alert_denial_spike`
+  - `alert_tenant_mismatch_spike`
+- Added workflow-level alert-to-action contract in `docs/WORKFLOWS.md` (WF-009).
+- Enforced operating rule: no alert suppression without corrective action evidence.
+- Verification:
+  - docs consistency pass (`OPERATIONS`, `WORKFLOWS`) ✅
+  - `npm run test:prod-gate` ✅
+  - `npm run check:openapi` ✅
+
+
+W3 post-run audits (2026-03-01):
+- Product premortem: `docs/workflow/W3-PRODUCT-PREMORTEM.md`
+- Workflow premortem: `docs/workflow/W3-WORKFLOW-PREMORTEM.md`
+- Smell check: `docs/workflow/W3-SMELL-CHECK.md`
+
+
+W3 smell-burn follow-up (2026-03-01):
+- Added canonical alert registry + env threshold profiles: `src/domain/services/wf5-alerts-registry.ts`.
+- Wired SLO evaluator to registry/profile defaults (reduced hardcoded drift risk).
+- Added registry coverage: `tests/unit/workflow/wf5-alerts-registry.test.ts`.

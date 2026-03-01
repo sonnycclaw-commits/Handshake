@@ -60,3 +60,51 @@ Run before deploy:
 ```bash
 npm run check:schema-preflight
 ```
+
+
+## W3 Alert Runbook Mapping (C4)
+
+### Alert: `alert_replay_guard_unavailable`
+Signal:
+- Replay guard store path is unavailable or degraded.
+- Usually correlated with `security_replay_guard_unavailable` responses.
+
+Operator action:
+1. Pause privileged mutation retries (`/workflow/decision-room/action`, `/policy/apply`).
+2. Validate D1 health and replay table availability (`replay_guards`).
+3. Run schema preflight and verify migrations:
+   - `npm run check:schema-preflight`
+4. Validate trust/replay rails with gates:
+   - `npm run test:prod-gate`
+5. Resume traffic only after deterministic replay behavior is restored.
+
+---
+
+### Alert: `alert_denial_spike`
+Signal:
+- Security denial rate exceeds configured threshold (`maxDenialRate`).
+
+Operator action:
+1. Query reason-family distribution (`GET /metrics/reasons`) and isolate dominant reasons.
+2. Check endpoint trend via metrics series (`GET /metrics/series`).
+3. Confirm no contract drift:
+   - `npm run check:reason-code-map`
+   - `npm run check:security-parity`
+4. If driven by malformed client payloads, issue integration guidance + throttle noisy callers.
+5. If driven by internal changes, execute rollback/mitigation and re-run release gates.
+
+---
+
+### Alert: `alert_tenant_mismatch_spike`
+Signal:
+- Tenant-boundary denial rate exceeds configured threshold (`maxTenantMismatchRate`).
+- Usually correlated with `security_read_tenant_mismatch` denials.
+
+Operator action:
+1. Verify identity envelope issuer and tenant claim mapping in middleware path.
+2. Validate read-scope behavior (`self|tenant|any`) against deployed config.
+3. Audit recent deploys affecting identity/read rails.
+4. Run protected-route parity and transport gates:
+   - `npm run check:security-parity`
+   - `npm run test:prod-gate`
+5. If cross-tenant leakage risk is suspected, keep fail-closed posture and escalate incident.

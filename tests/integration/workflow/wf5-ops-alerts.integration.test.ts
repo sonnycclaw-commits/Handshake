@@ -58,11 +58,22 @@ describe('WF5 Ops alerts integration (C7)', () => {
       timeoutEventsTotal: Math.max(1, timeoutFailClosed),
       escalationTotal: escalations,
       terminalMutationDeniedTotal: snap['wf5_terminal_mutation_denied_total'] ?? 0,
-      thresholds: { maxEscalationRate: 0.2, minTimeoutFailClosedRate: 1 }
+      securityDenialTotal: snap['wf5_security_denial_total'] ?? 0,
+      tenantMismatchDeniedTotal: snap['wf5_security_denial_total{class=read_authz,endpoint=workflow_get_request,reason=security_read_tenant_mismatch}'] ?? 0,
+      replayGuardUnavailableTotal: snap['wf5_replay_guard_unavailable_total'] ?? 0,
+      thresholds: {
+        maxEscalationRate: 0.2,
+        minTimeoutFailClosedRate: 1,
+        maxDenialRate: 0.4,
+        maxTenantMismatchRate: 0.1,
+        replayGuardUnavailableAlertCount: 1,
+      }
     })
 
     expect(total).toBeGreaterThan(0)
     expect((snap['wf5_artifact_gate_denied_total{reason=security_decision_context_mismatch}'] ?? 0)).toBeGreaterThanOrEqual(1)
     expect(report.alerts.length).toBeGreaterThanOrEqual(0)
+    expect(report.denialRate).toBeGreaterThanOrEqual(0)
+    expect(report.tenantMismatchRate).toBeGreaterThanOrEqual(0)
   })
 })

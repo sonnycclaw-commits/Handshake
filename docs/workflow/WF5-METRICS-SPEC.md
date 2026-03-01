@@ -62,3 +62,48 @@ Canonical metrics event fields:
 ## Versioning
 - `METRICS_SCHEMA_VERSION = v1`
 - Rollups store schema + projector version for audit replay
+
+
+## W3 C2 Dashboard Contract
+
+### Summary Surface (`GET /metrics/summary`)
+Required output fields:
+- `window`
+- `schemaVersion`
+- `projectorVersion`
+- `uair`, `airtP50Ms`, `airtP95Ms`, `gar`, `tca`
+- `totalEvents`
+- `denialEvents`
+- `replayDetectedEvents`
+- `replayGuardUnavailableEvents`
+
+These counters provide direct security trend visibility for denial and replay failure classes.
+
+### Series Surface (`GET /metrics/series`)
+Supported metric query values (enforced):
+- `uair`
+- `airt_p50_ms`
+- `airt_p95_ms`
+- `gar`
+- `tca`
+- `security_denial_total`
+- `security_replay_detected_total`
+- `security_replay_guard_unavailable_total`
+
+Invalid metric names fail with `invalid_metric_query` (400, `responseClass=blocked`).
+
+
+## W3 C3 Alert Thresholds
+
+Deterministic alert conditions:
+- `alert_replay_guard_unavailable`
+  - Trigger: `replayGuardUnavailableTotal >= replayGuardUnavailableAlertCount`
+- `alert_denial_spike`
+  - Trigger: `securityDenialTotal / totalRequests > maxDenialRate`
+- `alert_tenant_mismatch_spike`
+  - Trigger: `tenantMismatchDeniedTotal / totalRequests > maxTenantMismatchRate`
+
+Default thresholds:
+- `replayGuardUnavailableAlertCount = 1`
+- `maxDenialRate = 0.4`
+- `maxTenantMismatchRate = 0.1`

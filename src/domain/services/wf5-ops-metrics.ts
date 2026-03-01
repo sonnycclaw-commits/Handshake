@@ -1,3 +1,4 @@
+import { WF5_ALERT_IDS, getWF5AlertThresholds } from './wf5-alerts-registry'
 export type WF5MetricName =
   | 'wf5_requests_total'
   | 'wf5_decision_allow_total'
@@ -9,6 +10,9 @@ export type WF5MetricName =
   | 'wf5_escalation_throttled_total'
   | 'wf5_artifact_gate_denied_total'
   | 'wf5_artifact_gate_allowed_total'
+  | 'wf5_security_denial_total'
+  | 'wf5_replay_detected_total'
+  | 'wf5_replay_guard_unavailable_total'
 
 export type WF5MetricSample = {
   name: WF5MetricName
@@ -61,6 +65,9 @@ export type WF5SLOReport = {
   timeoutFailClosedRate: number
   escalationRate: number
   terminalMutationViolations: number
+  denialRate: number
+  tenantMismatchRate: number
+  replayGuardUnavailableCount: number
   alerts: string[]
 }
 
@@ -71,23 +78,41 @@ export function evaluateWF5SLOs(input: {
   timeoutEventsTotal: number
   escalationTotal: number
   terminalMutationDeniedTotal: number
+  securityDenialTotal?: number
+  tenantMismatchDeniedTotal?: number
+  replayGuardUnavailableTotal?: number
   thresholds?: {
     maxEscalationRate?: number
     minTimeoutFailClosedRate?: number
+    maxDenialRate?: number
+    maxTenantMismatchRate?: number
+    replayGuardUnavailableAlertCount?: number
   }
+  environment?: string
 }): WF5SLOReport {
   const total = Math.max(1, input.totalRequests)
   const timeoutEvents = Math.max(1, input.timeoutEventsTotal)
+  const envDefaults = getWF5AlertThresholds(input.environment)
   const thresholds = {
-    maxEscalationRate: input.thresholds?.maxEscalationRate ?? 0.35,
-    minTimeoutFailClosedRate: input.thresholds?.minTimeoutFailClosedRate ?? 1,
+    maxEscalationRate: input.thresholds?.maxEscalationRate ?? envDefaults.maxEscalationRate,
+    minTimeoutFailClosedRate: input.thresholds?.minTimeoutFailClosedRate ?? envDefaults.minTimeoutFailClosedRate,
+    maxDenialRate: input.thresholds?.maxDenialRate ?? envDefaults.maxDenialRate,
+    maxTenantMismatchRate: input.thresholds?.maxTenantMismatchRate ?? envDefaults.maxTenantMismatchRate,
+    replayGuardUnavailableAlertCount: input.thresholds?.replayGuardUnavailableAlertCount ?? envDefaults.replayGuardUnavailableAlertCount,
   }
+
+  const securityDenials = Math.max(0, input.securityDenialTotal ?? 0)
+  const tenantMismatch = Math.max(0, input.tenantMismatchDeniedTotal ?? 0)
+  const replayGuardUnavailable = Math.max(0, input.replayGuardUnavailableTotal ?? 0)
 
   const report: WF5SLOReport = {
     bypassSuccessRate: 0,
     timeoutFailClosedRate: input.timeoutFailClosedTotal / timeoutEvents,
     escalationRate: input.escalationTotal / total,
-    terminalMutationViolations: 0,
+    terminalMutationViolations: input.terminalMutationDeniedTotal,
+    denialRate: securityDenials / total,
+    tenantMismatchRate: tenantMismatch / total,
+    replayGuardUnavailableCount: replayGuardUnavailable,
     alerts: []
   }
 
@@ -101,6 +126,18 @@ export function evaluateWF5SLOs(input: {
 
   if (input.terminalMutationDeniedTotal > 0) {
     report.alerts.push('slo_terminal_mutation_attempts_detected')
+  }
+
+  if (report.denialRate > thresholds.maxDenialRate) {
+    report.alerts.push(WF5_ALERT_IDS[1])
+  }
+
+  if (report.tenantMismatchRate > thresholds.maxTenantMismatchRate) {
+    report.alerts.push(WF5_ALERT_IDS[2])
+  }
+
+  if (report.replayGuardUnavailableCount >= thresholds.replayGuardUnavailableAlertCount) {
+    report.alerts.push(WF5_ALERT_IDS[0])
   }
 
   // bypass success should always remain zero; denied counts are observability evidence.
