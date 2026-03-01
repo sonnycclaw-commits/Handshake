@@ -557,3 +557,35 @@ W4-D3 evidence (2026-03-01):
   - `npm run test:w4-invariants` ✅
   - `npm run test:prod-gate` ✅
   - `npm run check:openapi` ✅
+
+
+W4-D4/D5 premortem (2026-03-01): `docs/workflow/W4-D4D5-PREMORTEM.md` (locked before execution).
+
+
+W4-D4 evidence (2026-03-01):
+- Added release checklist generator: `scripts/generate-release-checklist.mjs`.
+- Added release checklist verifier: `scripts/check-release-checklist.mjs`.
+- Added npm scripts: `generate:release-checklist`, `check:release-checklist`.
+- Wired CI with checklist generate + verify steps.
+- Added verifier tests: `tests/unit/workflow/release-checklist.verifier.test.ts`.
+- Updated operations contract for release checklist automation.
+- Verification:
+  - `npm run generate:release-checklist` ✅
+  - `npm run check:release-checklist` ✅
+  - `npm test -- tests/unit/workflow/release-checklist.verifier.test.ts` ✅
+  - `npm run test:prod-gate` ✅
+
+
+W4-D5 evidence (2026-03-01):
+- Added 24h watch config contract: `docs/workflow/W4-24H-WATCH.json`.
+- Added operator watch/runbook doc: `docs/workflow/W4-24H-WATCH.md`.
+- Added watch config validator: `scripts/check-w4-watch-config.mjs`.
+- Added npm script: `check:w4-watch-config`.
+- Wired CI with watch config validation step.
+- Updated operations/quality docs for D5 policy and enforcement.
+- Verification:
+  - `npm run check:w4-watch-config` ✅
+  - `npm run generate:release-checklist` ✅
+  - `npm run check:release-checklist` ✅
+  - `npm run test:w4-invariants` ✅
+  - `npm run test:prod-gate` ✅

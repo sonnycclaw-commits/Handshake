@@ -147,3 +147,38 @@ Current enforced rules:
 4. `[env.production.vars].ENVIRONMENT` must equal `"production"`
 
 If this gate fails, do not deploy.
+
+
+## W4 Release Checklist Automation (D4)
+
+Before release, generate and verify checklist artifact:
+
+```bash
+npm run generate:release-checklist
+npm run check:release-checklist
+```
+
+Artifact path:
+- `artifacts/release-checklist.json`
+
+Required passing gates in artifact:
+- `check:schema-preflight`
+- `check:env-matrix`
+- `test:prod-gate`
+- `check:release-readiness`
+
+If checklist verification fails, do not release.
+
+
+## W4 24h Watch Hooks (D5)
+
+Run config validation:
+```bash
+npm run check:w4-watch-config
+```
+
+Watch contract sources:
+- `docs/workflow/W4-24H-WATCH.json`
+- `docs/workflow/W4-24H-WATCH.md`
+
+On release, monitor mandatory signals for 24h and execute mapped actions from the runbook matrix.

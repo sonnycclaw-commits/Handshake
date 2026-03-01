@@ -1,0 +1,20 @@
+{
+  "windowHours": 24,
+  "signals": [
+    {
+      "id": "alert_replay_guard_unavailable",
+      "threshold": { "gte": 1 },
+      "action": "run_replay_guard_recovery"
+    },
+    {
+      "id": "alert_denial_spike",
+      "threshold": { "gtRate": 0.3 },
+      "action": "run_denial_spike_triage"
+    },
+    {
+      "id": "alert_tenant_mismatch_spike",
+      "threshold": { "gtRate": 0.05 },
+      "action": "run_tenant_boundary_triage"
+    }
+  ]
+}
