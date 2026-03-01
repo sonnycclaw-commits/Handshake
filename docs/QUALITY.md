@@ -10,6 +10,8 @@
 - `check:reason-code-map`
 - `check:no-workflow-shim-imports`
 - `check:schema-preflight`
+- `check:release-readiness`
+- `check:env-matrix`
 - `test:sdk-smoke`
 - `check:ap6-report`
 
@@ -45,3 +47,8 @@
 ### P2
 - Delegation multi-hop subset invariants
 - Unknown response class fallback behavior in SDK
+
+
+Environment matrix (W4-D2):
+- CI must fail if production config enables dev exposure flags.
+- CI must fail if production env vars do not explicitly identify production posture.

@@ -527,3 +527,20 @@ W4-D1 evidence (2026-03-01):
   - `npm run check:schema-preflight` ✅
   - `npm run check:release-readiness` ✅
   - `npm run test:prod-gate` ✅
+
+
+W4-D2 evidence (2026-03-01):
+- Added env matrix safety gate: `scripts/check-env-matrix.mjs`.
+- Enforced prod-safe wrangler posture:
+  - `workers_dev = false`
+  - `preview_urls = false`
+  - `[env.production]` required
+  - `[env.production.vars].ENVIRONMENT = "production"`
+- Added npm script: `check:env-matrix`.
+- Wired CI to run env matrix gate.
+- Updated operations/quality docs with D2 policy.
+- Verification:
+  - `npm run check:env-matrix` ✅
+  - `npm run check:release-readiness` ✅
+  - `npm run test:prod-gate` ✅
+  - `npm run check:openapi` ✅

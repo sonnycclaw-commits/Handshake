@@ -60,6 +60,7 @@ Run before deploy:
 ```bash
 npm run check:schema-preflight
 npm run check:release-readiness
+npm run check:env-matrix
 ```
 
 
@@ -75,7 +76,8 @@ Operator action:
 2. Validate D1 health and replay table availability (`replay_guards`).
 3. Run schema preflight and verify migrations:
    - `npm run check:schema-preflight
-npm run check:release-readiness`
+npm run check:release-readiness
+npm run check:env-matrix`
 4. Validate trust/replay rails with gates:
    - `npm run test:prod-gate`
 5. Resume traffic only after deterministic replay behavior is restored.
@@ -119,10 +121,29 @@ Release path must fail closed unless migration + runtime safety checks pass.
 Primary gate:
 ```bash
 npm run check:release-readiness
+npm run check:env-matrix
 ```
 
 This currently enforces:
 1. `check:schema-preflight` (required migration + replay/tenant wiring)
 2. `test:prod-gate` (critical transport/invariant suite)
+
+If this gate fails, do not deploy.
+
+
+## W4 Environment Matrix Safety (D2)
+
+Production deploy policy forbids dev-mode exposure flags and invalid production env labeling.
+
+Gate:
+```bash
+npm run check:env-matrix
+```
+
+Current enforced rules:
+1. `workers_dev = false`
+2. `preview_urls = false`
+3. `[env.production]` block must exist
+4. `[env.production.vars].ENVIRONMENT` must equal `"production"`
 
 If this gate fails, do not deploy.
