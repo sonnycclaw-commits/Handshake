@@ -198,3 +198,19 @@ Convert telemetry alerts into deterministic operator actions (no passive dashboa
 
 ### Rule
 When any W3 alert fires, operator response must be executed via the mapped runbook; do not suppress alerts without corrective action evidence.
+
+
+---
+
+## WF-010 — Invariant Rails (W4 D3)
+
+### Purpose
+Protect semantic correctness beyond example-based tests.
+
+### Required invariants
+1. Scope lattice monotonicity (`workflow:read:self` <= `workflow:read:tenant` <= `workflow:read:any` for equivalent actors).
+2. Tenant isolation determinism across protected read endpoints.
+3. Deterministic reason/status/responseClass mapping for equivalent security failures.
+
+### Enforcement
+CI must execute invariant suite (`npm run test:w4-invariants`) and fail on any drift.
