@@ -48,8 +48,13 @@ As an operator agent/client, I read request state, decision-room context, and ev
 ### Failure Branches
 - Missing envelope -> `security_missing_identity_envelope` (401)
 - Invalid envelope -> `security_invalid_identity_envelope` (401)
-- Cross-principal read without scope -> `security_read_scope_denied` (403)
-- Tenant mismatch on protected reads -> `security_read_tenant_mismatch` (403)
+- Cross-principal read without qualifying scope -> `security_read_scope_denied` (403)
+- Tenant mismatch on tenant-scoped reads -> `security_read_tenant_mismatch` (403)
+
+Read scope hierarchy:
+- `workflow:read:self`: self-only
+- `workflow:read:tenant`: cross-principal within same tenant
+- `workflow:read:any`: admin global; non-admin backward-compat behaves tenant-scoped
 
 ### Action
 - Inject canonical identity envelope from trusted middleware and retry once.

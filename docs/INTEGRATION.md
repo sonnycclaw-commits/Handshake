@@ -48,10 +48,11 @@ Use `reasonCode` + `responseClass` as machine contract.
 
 ## Read Authorization (Slice 3)
 
-Protected workflow reads now require either:
-- self principal match, or
-- `workflow:read:any` in envelope scopes.
+Protected workflow reads now require one of:
+- self principal match,
+- `workflow:read:tenant` with same tenant,
+- `workflow:read:any` for admin global access (non-admin `read:any` is backward-compat tenant-scoped).
 
 Otherwise responses fail with `security_read_scope_denied` (403).
 
-Tenant note: if request records include tenant context, mismatched envelope tenant fails with `security_read_tenant_mismatch` (403).
+Tenant boundary violations fail with `security_read_tenant_mismatch` (403).
