@@ -361,25 +361,25 @@ AP6 W5 hardening evidence (2026-03-01):
 ## 30-Day $1Bn Scale Program (Execution Tracker)
 
 ### Cross-Cutting Controls (apply to all weeks)
-- [ ] XCT-1 One-slice commits only (no blended refactors)
-- [ ] XCT-2 No gate bypasses
-- [ ] XCT-3 Docs/runtime/tests updated in same change set
-- [ ] XCT-4 Every security behavior change has RED->GREEN evidence
-- [ ] XCT-5 Decision register updated for each architectural decision
+- [x] XCT-1 One-slice commits only (no blended refactors)
+- [x] XCT-2 No gate bypasses
+- [x] XCT-3 Docs/runtime/tests updated in same change set
+- [x] XCT-4 Every security behavior change has RED->GREEN evidence
+- [x] XCT-5 Decision register updated for each architectural decision
 
 ---
 
 ### Week 1 — Transitional Risk Surface Elimination
 
-- [ ] W1-A1 Decide legacy bridge fate (`request-workflow-api.ts`) with owner + deprecation path
-- [ ] W1-A2 CI import-boundary enforcement for legacy workflow APIs
-- [ ] W1-A3 Migrate all straggler callsites to explicit service factory path
-- [ ] W1-A4 Add deprecation metadata (owner, expiry date, replacement path)
+- [x] W1-A1 Decide legacy bridge fate (`request-workflow-api.ts`) with owner + deprecation path
+- [x] W1-A2 CI import-boundary enforcement for legacy workflow APIs
+- [x] W1-A3 Migrate all straggler callsites to explicit service factory path
+- [x] W1-A4 Add deprecation metadata (owner, expiry date, replacement path)
 
 **Acceptance checks:**
-- [ ] W1-AC1 Zero legacy imports in production src
-- [ ] W1-AC2 Boundary checks enforced in CI
-- [ ] W1-AC3 Full gates green after migration
+- [x] W1-AC1 Zero legacy imports in production src
+- [x] W1-AC2 Boundary checks enforced in CI
+- [x] W1-AC3 Full gates green after migration
 
 ---
 

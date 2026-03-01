@@ -1,5 +1,17 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, authorizePrivilegedExecution } from '@/domain/services/request-workflow-api'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
+
+
+function makeService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
 
 describe('Request Workflow RED (decision artifact gate)', () => {
   it('RW-011: denies privileged execution without artifact', async () => {
@@ -14,13 +26,13 @@ describe('Request Workflow RED (decision artifact gate)', () => {
       context: { policyVersion: 'pv1', trustSnapshotId: 'ts1' }
     }
 
-    const out = await authorizePrivilegedExecution({ request, artifact: null })
+    const out = await makeService().authorizePrivilegedExecution({ request, artifact: null })
     expect(out.allowed).toBe(false)
     expect(out.reasonCode).toMatch(/missing_decision_artifact/i)
   })
 
   it('RW-011: denies privileged continuation from non-allow artifact', async () => {
-    const denied = await submitRequest({
+    const denied = await makeService().submitRequest({
       requestId: 'dag-1',
       principalId: '',
       agentId: 'a1',
@@ -40,7 +52,7 @@ describe('Request Workflow RED (decision artifact gate)', () => {
       privilegedPath: true,
       context: {}
     }
-    const out = await authorizePrivilegedExecution({ request, artifact: denied })
+    const out = await makeService().authorizePrivilegedExecution({ request, artifact: denied })
 
     expect(denied.decision).toBe('deny')
     expect(out.allowed).toBe(false)
@@ -59,11 +71,11 @@ describe('Request Workflow RED (decision artifact gate)', () => {
       context: { policyVersion: 'pv1', trustSnapshotId: 'ts1' }
     }
 
-    const allowed = await submitRequest(request)
+    const allowed = await makeService().submitRequest(request)
     expect(allowed.decision).toBe('allow')
 
     const tampered = { ...allowed, decisionContextHash: 'ctx_tampered' }
-    const gate = await authorizePrivilegedExecution({ request, artifact: tampered })
+    const gate = await makeService().authorizePrivilegedExecution({ request, artifact: tampered })
 
     expect(gate.allowed).toBe(false)
     expect(gate.reasonCode).toMatch(/context_mismatch/i)
@@ -81,10 +93,10 @@ describe('Request Workflow RED (decision artifact gate)', () => {
       context: { policyVersion: 'pv1', trustSnapshotId: 'ts1' }
     }
 
-    const allowed = await submitRequest(request)
+    const allowed = await makeService().submitRequest(request)
     expect(allowed.decision).toBe('allow')
 
-    const gate = await authorizePrivilegedExecution({ request, artifact: allowed })
+    const gate = await makeService().authorizePrivilegedExecution({ request, artifact: allowed })
     expect(gate.allowed).toBe(true)
   })
 })

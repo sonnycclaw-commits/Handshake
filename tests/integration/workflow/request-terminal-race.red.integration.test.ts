@@ -1,9 +1,21 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, resolveRequestHitl } from '@/domain/services/request-workflow-api'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
+
+
+function makeService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
 
 describe('Request Workflow RED (terminal race)', () => {
   it('preserves terminal immutability under callback race', async () => {
-    const out = await submitRequest({
+    const out = await makeService().submitRequest({
       requestId: 'race-1',
       principalId: 'p1',
       agentId: 'a1',
@@ -16,7 +28,7 @@ describe('Request Workflow RED (terminal race)', () => {
 
     expect(out.decision).toBe('escalate')
 
-    const timeout = await resolveRequestHitl({
+    const timeout = await makeService().resolveRequestHitl({
       requestId: out.requestId,
       hitlRequestId: out.hitlRequestId!,
       decision: 'timeout',
@@ -24,7 +36,7 @@ describe('Request Workflow RED (terminal race)', () => {
     })
     expect(timeout.decision).toBe('deny')
 
-    const lateApprove = await resolveRequestHitl({
+    const lateApprove = await makeService().resolveRequestHitl({
       requestId: out.requestId,
       hitlRequestId: out.hitlRequestId!,
       decision: 'approve',

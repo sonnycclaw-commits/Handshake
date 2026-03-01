@@ -1,6 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, authorizePrivilegedExecution } from '@/domain/services/request-workflow-api'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
 import { getWF5MetricsSnapshot, evaluateWF5SLOs } from '@/domain/services/wf5-ops-metrics'
+
+
+function makeService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
 
 describe('WF5 Ops alerts integration (C7)', () => {
   it('captures key counters and evaluates alert signals', async () => {
@@ -15,7 +27,7 @@ describe('WF5 Ops alerts integration (C7)', () => {
     }
 
     for (let i = 0; i < 6; i++) {
-      await submitRequest({ ...reqBase, requestId: `ops-${i}` })
+      await makeService().submitRequest({ ...reqBase, requestId: `ops-${i}` })
     }
 
     const req = {
@@ -29,8 +41,8 @@ describe('WF5 Ops alerts integration (C7)', () => {
       context: { policyVersion: 'pv1', trustSnapshotId: 'ts1' }
     }
 
-    const artifact = await submitRequest(req)
-    await authorizePrivilegedExecution({ request: req, artifact: { ...artifact, decisionContextHash: 'ctx_bad' } })
+    const artifact = await makeService().submitRequest(req)
+    await makeService().authorizePrivilegedExecution({ request: req, artifact: { ...artifact, decisionContextHash: 'ctx_bad' } })
 
     const snap = await getWF5MetricsSnapshot()
 

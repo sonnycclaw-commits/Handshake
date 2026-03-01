@@ -269,3 +269,20 @@ Eliminate latent drift paths and ensure deploy safety for tenant-bound authoriza
 
 ### Contract Impact
 No external API shape break intended. Internal architecture and CI guardrails hardened.
+
+## DR-2026-03-01-011 — W1 Legacy Bridge Finalization (Removal)
+
+- **Status:** Approved
+- **Date:** 2026-03-01
+- **Owner:** Joel + Sonny
+
+### Decision
+W1 removes the temporary `request-workflow-api.ts` bridge entirely and migrates all straggler test callsites to explicit workflow service factory composition.
+
+### Why
+Legacy bridge paths are transitional risk surfaces that can reintroduce hidden dependency patterns. Removal aligns with explicit-composition architecture.
+
+### Outcomes
+- bridge file removed,
+- zero bridge imports in src/tests,
+- boundary check continues enforced in CI.

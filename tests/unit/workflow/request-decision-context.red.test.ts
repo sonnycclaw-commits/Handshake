@@ -1,10 +1,22 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '@/domain/services/request-workflow-api'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
+
+
+function makeService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
 
 describe('Request Decision Context RED (unit)', () => {
   it('produces stable decisionContextHash for same normalized context', async () => {
     const baseTs = Date.now()
-    const a = await submitRequest({
+    const a = await makeService().submitRequest({
       requestId: 'ctx-1',
       principalId: 'p1',
       agentId: 'a1',
@@ -20,7 +32,7 @@ describe('Request Decision Context RED (unit)', () => {
       }
     })
 
-    const b = await submitRequest({
+    const b = await makeService().submitRequest({
       requestId: 'ctx-2',
       principalId: 'p1',
       agentId: 'a1',

@@ -1,9 +1,21 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '@/domain/services/request-workflow-api'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
+
+
+function makeService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
 
 describe('Request Workflow RED (integration enforcement)', () => {
   it('RW-004: denies privileged bypass path', async () => {
-    const out = await submitRequest({
+    const out = await makeService().submitRequest({
       requestId: 'ri1',
       principalId: 'p1',
       agentId: 'a1',
@@ -18,7 +30,7 @@ describe('Request Workflow RED (integration enforcement)', () => {
   })
 
   it('RW-004b: denies side-channel adapter invocation attempts', async () => {
-    const out = await submitRequest({
+    const out = await makeService().submitRequest({
       requestId: 'ri1b',
       principalId: 'p1',
       agentId: 'a1',
@@ -46,8 +58,8 @@ describe('Request Workflow RED (integration enforcement)', () => {
       privilegedPath: true,
     }
 
-    const a = await submitRequest(req)
-    const b = await submitRequest({ ...req, requestId: 'ri3' })
+    const a = await makeService().submitRequest(req)
+    const b = await makeService().submitRequest({ ...req, requestId: 'ri3' })
 
     expect(a.decision).toBe(b.decision)
   })

@@ -1,10 +1,22 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '@/domain/services/request-workflow-api'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
 import { getRetryPolicyForReason } from '@/domain/services/request-retry-policy'
+
+
+function makeService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
 
 describe('Request Workflow RED (agent contract stability)', () => {
   it('maps deny reason classes to deterministic retry policy', async () => {
-    const denied = await submitRequest({
+    const denied = await makeService().submitRequest({
       requestId: 'acs-1',
       principalId: '',
       agentId: 'a1',

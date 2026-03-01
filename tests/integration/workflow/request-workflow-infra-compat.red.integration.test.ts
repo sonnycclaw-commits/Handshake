@@ -1,10 +1,22 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, resolveRequestHitl, getRequestAudit } from '@/domain/services/request-workflow-api'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
 import { getHITLRequest } from '@/domain/services/hitl-workflow'
+
+
+function makeService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
 
 describe('Request Workflow RED (infra compatibility)', () => {
   it('uses existing HITL workflow for escalations', async () => {
-    const out = await submitRequest({
+    const out = await makeService().submitRequest({
       requestId: 'infra-1',
       principalId: 'p1',
       agentId: 'a1',
@@ -23,7 +35,7 @@ describe('Request Workflow RED (infra compatibility)', () => {
   })
 
   it('records audit trail for submit + resolution', async () => {
-    const out = await submitRequest({
+    const out = await makeService().submitRequest({
       requestId: 'infra-2',
       principalId: 'p1',
       agentId: 'a1',
@@ -34,14 +46,14 @@ describe('Request Workflow RED (infra compatibility)', () => {
       context: { amount: 700 }
     })
 
-    await resolveRequestHitl({
+    await makeService().resolveRequestHitl({
       requestId: out.requestId,
       hitlRequestId: out.hitlRequestId!,
       decision: 'timeout',
       timestamp: Date.now() + 600_000
     })
 
-    const audit = await getRequestAudit(out.requestId)
+    const audit = await makeService().getRequestAudit(out.requestId)
     expect(audit.length).toBeGreaterThanOrEqual(2)
   })
 })

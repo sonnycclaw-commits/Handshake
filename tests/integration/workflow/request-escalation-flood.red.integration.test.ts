@@ -1,5 +1,17 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '@/domain/services/request-workflow-api'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
+
+
+function makeService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
 
 describe('Request Workflow RED (escalation flood control)', () => {
   it('throttles repeated escalations from same agent/principal tuple', async () => {
@@ -8,7 +20,7 @@ describe('Request Workflow RED (escalation flood control)', () => {
 
     let throttled = false
     for (let i = 0; i < 8; i++) {
-      const out = await submitRequest({
+      const out = await makeService().submitRequest({
         requestId: `flood-${i}`,
         principalId,
         agentId,
