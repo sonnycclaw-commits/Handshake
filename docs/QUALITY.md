@@ -12,6 +12,7 @@
 - `check:schema-preflight`
 - `check:release-readiness`
 - `check:env-matrix`
+- `test:w4-invariants`
 - `test:sdk-smoke`
 - `check:ap6-report`
 
@@ -52,3 +53,9 @@
 Environment matrix (W4-D2):
 - CI must fail if production config enables dev exposure flags.
 - CI must fail if production env vars do not explicitly identify production posture.
+
+
+W4 invariants (D3):
+- Scope lattice monotonicity must hold (`self <= tenant <= any` under equivalent conditions).
+- Tenant isolation failures must return deterministic reason/status on all protected read endpoints.
+- Equivalent security failure classes must remain status/responseClass deterministic.
