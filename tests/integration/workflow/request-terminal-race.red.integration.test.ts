@@ -15,7 +15,8 @@ function makeService() {
 
 describe('Request Workflow RED (terminal race)', () => {
   it('preserves terminal immutability under callback race', async () => {
-    const out = await makeService().submitRequest({
+    const service = makeService()
+    const out = await service.submitRequest({
       requestId: 'race-1',
       principalId: 'p1',
       agentId: 'a1',
@@ -28,7 +29,7 @@ describe('Request Workflow RED (terminal race)', () => {
 
     expect(out.decision).toBe('escalate')
 
-    const timeout = await makeService().resolveRequestHitl({
+    const timeout = await service.resolveRequestHitl({
       requestId: out.requestId,
       hitlRequestId: out.hitlRequestId!,
       decision: 'timeout',
@@ -36,7 +37,7 @@ describe('Request Workflow RED (terminal race)', () => {
     })
     expect(timeout.decision).toBe('deny')
 
-    const lateApprove = await makeService().resolveRequestHitl({
+    const lateApprove = await service.resolveRequestHitl({
       requestId: out.requestId,
       hitlRequestId: out.hitlRequestId!,
       decision: 'approve',

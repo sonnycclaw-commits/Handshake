@@ -15,7 +15,8 @@ function makeService() {
 
 describe('Request Workflow RED (unit)', () => {
   it('RW-001: denies invalid shape or trust context fail-closed', async () => {
-    const out = await makeService().submitRequest({
+    const service = makeService()
+    const out = await service.submitRequest({
       requestId: 'r1',
       principalId: '',
       agentId: 'a1',
@@ -29,7 +30,8 @@ describe('Request Workflow RED (unit)', () => {
   })
 
   it('RW-002: boundary request escalates deterministically', async () => {
-    const out = await makeService().submitRequest({
+    const service = makeService()
+    const out = await service.submitRequest({
       requestId: 'r2',
       principalId: 'p1',
       agentId: 'a1',
@@ -44,7 +46,8 @@ describe('Request Workflow RED (unit)', () => {
   })
 
   it('RW-003: timeout terminal deny and late approve remains deny', async () => {
-    const escalated = await makeService().submitRequest({
+    const service = makeService()
+    const escalated = await service.submitRequest({
       requestId: 'r3',
       principalId: 'p1',
       agentId: 'a1',
@@ -55,7 +58,7 @@ describe('Request Workflow RED (unit)', () => {
       context: { amount: 300 },
     })
 
-    const expired = await makeService().resolveRequestHitl({
+    const expired = await service.resolveRequestHitl({
       requestId: escalated.requestId,
       hitlRequestId: escalated.hitlRequestId || 'missing',
       decision: 'timeout',
@@ -63,7 +66,7 @@ describe('Request Workflow RED (unit)', () => {
     })
     expect(expired.decision).toBe('deny')
 
-    const lateApprove = await makeService().resolveRequestHitl({
+    const lateApprove = await service.resolveRequestHitl({
       requestId: escalated.requestId,
       hitlRequestId: escalated.hitlRequestId || 'missing',
       decision: 'approve',
@@ -74,7 +77,8 @@ describe('Request Workflow RED (unit)', () => {
   })
 
   it('RW-006: emits audit events with non-empty reason codes', async () => {
-    await makeService().submitRequest({
+    const service = makeService()
+    await service.submitRequest({
       requestId: 'r4',
       principalId: 'p1',
       agentId: 'a1',
@@ -84,7 +88,7 @@ describe('Request Workflow RED (unit)', () => {
       privilegedPath: true,
     })
 
-    const audit = await makeService().getRequestAudit('r4')
+    const audit = await service.getRequestAudit('r4')
     expect(audit.length).toBeGreaterThan(0)
     for (const e of audit as any[]) {
       expect(String(e.reasonCode || '').trim().length).toBeGreaterThan(0)

@@ -16,7 +16,8 @@ function makeService() {
 
 describe('Request Workflow RED (infra compatibility)', () => {
   it('uses existing HITL workflow for escalations', async () => {
-    const out = await makeService().submitRequest({
+    const service = makeService()
+    const out = await service.submitRequest({
       requestId: 'infra-1',
       principalId: 'p1',
       agentId: 'a1',
@@ -35,7 +36,8 @@ describe('Request Workflow RED (infra compatibility)', () => {
   })
 
   it('records audit trail for submit + resolution', async () => {
-    const out = await makeService().submitRequest({
+    const service = makeService()
+    const out = await service.submitRequest({
       requestId: 'infra-2',
       principalId: 'p1',
       agentId: 'a1',
@@ -46,14 +48,14 @@ describe('Request Workflow RED (infra compatibility)', () => {
       context: { amount: 700 }
     })
 
-    await makeService().resolveRequestHitl({
+    await service.resolveRequestHitl({
       requestId: out.requestId,
       hitlRequestId: out.hitlRequestId!,
       decision: 'timeout',
       timestamp: Date.now() + 600_000
     })
 
-    const audit = await makeService().getRequestAudit(out.requestId)
+    const audit = await service.getRequestAudit(out.requestId)
     expect(audit.length).toBeGreaterThanOrEqual(2)
   })
 })

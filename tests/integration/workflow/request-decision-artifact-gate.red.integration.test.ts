@@ -15,6 +15,7 @@ function makeService() {
 
 describe('Request Workflow RED (decision artifact gate)', () => {
   it('RW-011: denies privileged execution without artifact', async () => {
+    const service = makeService()
     const request = {
       requestId: 'dag-0',
       principalId: 'p1',
@@ -26,13 +27,14 @@ describe('Request Workflow RED (decision artifact gate)', () => {
       context: { policyVersion: 'pv1', trustSnapshotId: 'ts1' }
     }
 
-    const out = await makeService().authorizePrivilegedExecution({ request, artifact: null })
+    const out = await service.authorizePrivilegedExecution({ request, artifact: null })
     expect(out.allowed).toBe(false)
     expect(out.reasonCode).toMatch(/missing_decision_artifact/i)
   })
 
   it('RW-011: denies privileged continuation from non-allow artifact', async () => {
-    const denied = await makeService().submitRequest({
+    const service = makeService()
+    const denied = await service.submitRequest({
       requestId: 'dag-1',
       principalId: '',
       agentId: 'a1',
@@ -52,7 +54,7 @@ describe('Request Workflow RED (decision artifact gate)', () => {
       privilegedPath: true,
       context: {}
     }
-    const out = await makeService().authorizePrivilegedExecution({ request, artifact: denied })
+    const out = await service.authorizePrivilegedExecution({ request, artifact: denied })
 
     expect(denied.decision).toBe('deny')
     expect(out.allowed).toBe(false)
@@ -60,6 +62,7 @@ describe('Request Workflow RED (decision artifact gate)', () => {
   })
 
   it('RW-011: denies artifact with mismatched decisionContextHash', async () => {
+    const service = makeService()
     const request = {
       requestId: 'dag-2',
       principalId: 'p1',
@@ -71,17 +74,18 @@ describe('Request Workflow RED (decision artifact gate)', () => {
       context: { policyVersion: 'pv1', trustSnapshotId: 'ts1' }
     }
 
-    const allowed = await makeService().submitRequest(request)
+    const allowed = await service.submitRequest(request)
     expect(allowed.decision).toBe('allow')
 
     const tampered = { ...allowed, decisionContextHash: 'ctx_tampered' }
-    const gate = await makeService().authorizePrivilegedExecution({ request, artifact: tampered })
+    const gate = await service.authorizePrivilegedExecution({ request, artifact: tampered })
 
     expect(gate.allowed).toBe(false)
     expect(gate.reasonCode).toMatch(/context_mismatch/i)
   })
 
   it('RW-011: allows privileged execution with valid allow artifact and context hash', async () => {
+    const service = makeService()
     const request = {
       requestId: 'dag-3',
       principalId: 'p1',
@@ -93,10 +97,10 @@ describe('Request Workflow RED (decision artifact gate)', () => {
       context: { policyVersion: 'pv1', trustSnapshotId: 'ts1' }
     }
 
-    const allowed = await makeService().submitRequest(request)
+    const allowed = await service.submitRequest(request)
     expect(allowed.decision).toBe('allow')
 
-    const gate = await makeService().authorizePrivilegedExecution({ request, artifact: allowed })
+    const gate = await service.authorizePrivilegedExecution({ request, artifact: allowed })
     expect(gate.allowed).toBe(true)
   })
 })

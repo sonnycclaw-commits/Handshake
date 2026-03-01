@@ -15,12 +15,13 @@ function makeService() {
 
 describe('Request Workflow RED (escalation flood control)', () => {
   it('throttles repeated escalations from same agent/principal tuple', async () => {
+    const service = makeService()
     const principalId = 'p-flood'
     const agentId = 'a-flood'
 
     let throttled = false
     for (let i = 0; i < 8; i++) {
-      const out = await makeService().submitRequest({
+      const out = await service.submitRequest({
         requestId: `flood-${i}`,
         principalId,
         agentId,
