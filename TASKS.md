@@ -400,6 +400,7 @@ AP6 W5 hardening evidence (2026-03-01):
 
 ### Week 3 — Production Observability & Alerts
 
+- [ ] W3-C0 Premortem lock: W3 constraints + blast-radius notes captured (one-slice commits, no gate bypass)
 - [ ] W3-C1 Emit structured telemetry for key denial/replay failures
 - [ ] W3-C2 Build baseline dashboards (reason trend, endpoint failure, replay events)
 - [ ] W3-C3 Configure alerts for replay guard unavailable, denial spikes, tenant mismatch spikes
