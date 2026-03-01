@@ -58,6 +58,9 @@ jobs:
       - name: Environment matrix safety
         run: npm run check:env-matrix
 
+      - name: W4 invariants
+        run: npm run test:w4-invariants
+
       - name: SDK drift check
         run: npm run check:sdk-drift
 

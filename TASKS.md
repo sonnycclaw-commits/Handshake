@@ -544,3 +544,16 @@ W4-D2 evidence (2026-03-01):
   - `npm run check:release-readiness` ✅
   - `npm run test:prod-gate` ✅
   - `npm run check:openapi` ✅
+
+
+W4-D3 evidence (2026-03-01):
+- Added invariant suite script: `test:w4-invariants`.
+- Added scope lattice monotonicity invariants: `tests/unit/workflow/read-scope-lattice.invariants.test.ts`.
+- Added tenant isolation determinism invariants: `tests/integration/workflow/tenant-isolation.invariants.integration.test.ts`.
+- Added reason/status/responseClass determinism invariants: `tests/unit/workflow/reason-status-determinism.invariants.test.ts`.
+- Wired invariant suite into CI.
+- Updated quality/workflow docs with W4-D3 contract.
+- Verification:
+  - `npm run test:w4-invariants` ✅
+  - `npm run test:prod-gate` ✅
+  - `npm run check:openapi` ✅
