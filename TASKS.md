@@ -385,16 +385,16 @@ AP6 W5 hardening evidence (2026-03-01):
 
 ### Week 2 — Least-Privilege Scope Model
 
-- [ ] W2-B1 Define/enforce scope hierarchy: `workflow:read:self|tenant|any`
-- [ ] W2-B2 Upgrade read authz decision table (self/tenant/any + tenant guard)
-- [ ] W2-B3 Add backward-compat mode + explicit sunset for old broad scope behavior
-- [ ] W2-B4 Update OpenAPI + CONTRACT/INTEGRATION/WORKFLOWS docs in same change set
-- [ ] W2-B5 Add full matrix tests for scope + tenant combinations
+- [x] W2-B1 Define/enforce scope hierarchy: `workflow:read:self|tenant|any`
+- [x] W2-B2 Upgrade read authz decision table (self/tenant/any + tenant guard)
+- [x] W2-B3 Add backward-compat mode + explicit sunset for old broad scope behavior
+- [x] W2-B4 Update OpenAPI + CONTRACT/INTEGRATION/WORKFLOWS docs in same change set
+- [x] W2-B5 Add full matrix tests for scope + tenant combinations
 
 **Acceptance checks:**
-- [ ] W2-AC1 Scope semantics deterministic and test-covered
-- [ ] W2-AC2 Cross-principal read ambiguity removed
-- [ ] W2-AC3 Backward-compat behavior explicit and time-bounded
+- [x] W2-AC1 Scope semantics deterministic and test-covered
+- [x] W2-AC2 Cross-principal read ambiguity removed
+- [x] W2-AC3 Backward-compat behavior explicit and time-bounded
 
 ---
 
@@ -407,27 +407,27 @@ AP6 W5 hardening evidence (2026-03-01):
 - [x] W3-C4 Link each alert to runbook actions in OPERATIONS
 
 **Acceptance checks:**
-- [ ] W3-AC1 Critical authz/replay failures are observable in real time
-- [ ] W3-AC2 Alerts route correctly in staging simulation
-- [ ] W3-AC3 Operators can resolve without source-code deep dive
+- [x] W3-AC1 Critical authz/replay failures are observable in real time
+- [x] W3-AC2 Alerts route correctly in staging simulation
+- [x] W3-AC3 Operators can resolve without source-code deep dive
 
 ---
 
 ### Week 4 — Release Discipline & Environment Safety
 
 - [x] W4-D1 Migration confirmation gate in deploy path
-- [ ] W4-D2 Enforce environment matrix (no prod with dev bypass flags)
-- [ ] W4-D3 Add invariant/property tests:
-  - [ ] scope lattice monotonicity
-  - [ ] tenant isolation invariants
-  - [ ] deterministic reason/status for equivalent failures
-- [ ] W4-D4 Automate release checklist proof (contract parity, map completeness, no legacy imports, schema preflight, full gates)
-- [ ] W4-D5 24h post-release verification watch with explicit thresholds
+- [x] W4-D2 Enforce environment matrix (no prod with dev bypass flags)
+- [x] W4-D3 Add invariant/property tests:
+  - [x] scope lattice monotonicity
+  - [x] tenant isolation invariants
+  - [x] deterministic reason/status for equivalent failures
+- [x] W4-D4 Automate release checklist proof (contract parity, map completeness, no legacy imports, schema preflight, full gates)
+- [x] W4-D5 24h post-release verification watch with explicit thresholds
 
 **Acceptance checks:**
-- [ ] W4-AC1 Pipeline enforces migration + policy integrity
-- [ ] W4-AC2 Invariant/property tests protect against semantic drift
-- [ ] W4-AC3 No manual “trust me” release path remains
+- [x] W4-AC1 Pipeline enforces migration + policy integrity
+- [x] W4-AC2 Invariant/property tests protect against semantic drift
+- [x] W4-AC3 No manual “trust me” release path remains
 
 ---
 
@@ -589,3 +589,9 @@ W4-D5 evidence (2026-03-01):
   - `npm run check:release-checklist` ✅
   - `npm run test:w4-invariants` ✅
   - `npm run test:prod-gate` ✅
+
+
+30-day program closeout smell test (2026-03-01):
+- White-hat/red-hat assessment captured in `docs/workflow/POST-30DAY-SMELL-TEST-2026-03-01.md`.
+- Core residual risks: checklist truth-linking, threshold calibration, drift prevention discipline.
+- Program status normalized to complete across W1-W4 acceptance lines.
