@@ -403,7 +403,7 @@ AP6 W5 hardening evidence (2026-03-01):
 - [ ] W3-C0 Premortem lock: W3 constraints + blast-radius notes captured (one-slice commits, no gate bypass)
 - [x] W3-C1 Emit structured telemetry for key denial/replay failures
 - [x] W3-C2 Build baseline dashboards (reason trend, endpoint failure, replay events)
-- [ ] W3-C3 Configure alerts for replay guard unavailable, denial spikes, tenant mismatch spikes
+- [x] W3-C3 Configure alerts for replay guard unavailable, denial spikes, tenant mismatch spikes
 - [ ] W3-C4 Link each alert to runbook actions in OPERATIONS
 
 **Acceptance checks:**
@@ -469,3 +469,20 @@ W3-C2 evidence (2026-03-01):
   - `npm test -- tests/integration/workflow/w3-metrics-dashboard-contract.integration.test.ts` ✅
   - `npm run check:openapi` ✅
   - `npm run test:prod-gate` ✅
+
+
+W3-C3 evidence (2026-03-01):
+- Extended WF5 SLO evaluator with deterministic alert rails for:
+  - `alert_replay_guard_unavailable`
+  - `alert_denial_spike`
+  - `alert_tenant_mismatch_spike`
+- Added new SLO inputs and derived rates:
+  - `securityDenialTotal`, `tenantMismatchDeniedTotal`, `replayGuardUnavailableTotal`
+  - `denialRate`, `tenantMismatchRate`, `replayGuardUnavailableCount`
+- Added C3 unit coverage: `tests/unit/workflow/wf5-ops-metrics.c3-alerts.test.ts`.
+- Updated integration alert test to include C3 counters and thresholds.
+- Updated metrics spec with explicit C3 alert threshold contract.
+- Verification:
+  - `npm test -- tests/unit/workflow/wf5-ops-metrics.test.ts tests/unit/workflow/wf5-ops-metrics.c3-alerts.test.ts tests/integration/workflow/wf5-ops-alerts.integration.test.ts` ✅
+  - `npm run test:prod-gate` ✅
+  - `npm run check:openapi` ✅

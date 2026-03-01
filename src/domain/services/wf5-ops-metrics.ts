@@ -64,6 +64,9 @@ export type WF5SLOReport = {
   timeoutFailClosedRate: number
   escalationRate: number
   terminalMutationViolations: number
+  denialRate: number
+  tenantMismatchRate: number
+  replayGuardUnavailableCount: number
   alerts: string[]
 }
 
@@ -74,9 +77,15 @@ export function evaluateWF5SLOs(input: {
   timeoutEventsTotal: number
   escalationTotal: number
   terminalMutationDeniedTotal: number
+  securityDenialTotal?: number
+  tenantMismatchDeniedTotal?: number
+  replayGuardUnavailableTotal?: number
   thresholds?: {
     maxEscalationRate?: number
     minTimeoutFailClosedRate?: number
+    maxDenialRate?: number
+    maxTenantMismatchRate?: number
+    replayGuardUnavailableAlertCount?: number
   }
 }): WF5SLOReport {
   const total = Math.max(1, input.totalRequests)
@@ -84,13 +93,23 @@ export function evaluateWF5SLOs(input: {
   const thresholds = {
     maxEscalationRate: input.thresholds?.maxEscalationRate ?? 0.35,
     minTimeoutFailClosedRate: input.thresholds?.minTimeoutFailClosedRate ?? 1,
+    maxDenialRate: input.thresholds?.maxDenialRate ?? 0.4,
+    maxTenantMismatchRate: input.thresholds?.maxTenantMismatchRate ?? 0.1,
+    replayGuardUnavailableAlertCount: input.thresholds?.replayGuardUnavailableAlertCount ?? 1,
   }
+
+  const securityDenials = Math.max(0, input.securityDenialTotal ?? 0)
+  const tenantMismatch = Math.max(0, input.tenantMismatchDeniedTotal ?? 0)
+  const replayGuardUnavailable = Math.max(0, input.replayGuardUnavailableTotal ?? 0)
 
   const report: WF5SLOReport = {
     bypassSuccessRate: 0,
     timeoutFailClosedRate: input.timeoutFailClosedTotal / timeoutEvents,
     escalationRate: input.escalationTotal / total,
-    terminalMutationViolations: 0,
+    terminalMutationViolations: input.terminalMutationDeniedTotal,
+    denialRate: securityDenials / total,
+    tenantMismatchRate: tenantMismatch / total,
+    replayGuardUnavailableCount: replayGuardUnavailable,
     alerts: []
   }
 
@@ -104,6 +123,18 @@ export function evaluateWF5SLOs(input: {
 
   if (input.terminalMutationDeniedTotal > 0) {
     report.alerts.push('slo_terminal_mutation_attempts_detected')
+  }
+
+  if (report.denialRate > thresholds.maxDenialRate) {
+    report.alerts.push('alert_denial_spike')
+  }
+
+  if (report.tenantMismatchRate > thresholds.maxTenantMismatchRate) {
+    report.alerts.push('alert_tenant_mismatch_spike')
+  }
+
+  if (report.replayGuardUnavailableCount >= thresholds.replayGuardUnavailableAlertCount) {
+    report.alerts.push('alert_replay_guard_unavailable')
   }
 
   // bypass success should always remain zero; denied counts are observability evidence.

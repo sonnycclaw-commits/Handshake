@@ -91,3 +91,19 @@ Supported metric query values (enforced):
 - `security_replay_guard_unavailable_total`
 
 Invalid metric names fail with `invalid_metric_query` (400, `responseClass=blocked`).
+
+
+## W3 C3 Alert Thresholds
+
+Deterministic alert conditions:
+- `alert_replay_guard_unavailable`
+  - Trigger: `replayGuardUnavailableTotal >= replayGuardUnavailableAlertCount`
+- `alert_denial_spike`
+  - Trigger: `securityDenialTotal / totalRequests > maxDenialRate`
+- `alert_tenant_mismatch_spike`
+  - Trigger: `tenantMismatchDeniedTotal / totalRequests > maxTenantMismatchRate`
+
+Default thresholds:
+- `replayGuardUnavailableAlertCount = 1`
+- `maxDenialRate = 0.4`
+- `maxTenantMismatchRate = 0.1`
