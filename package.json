@@ -6,7 +6,8 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "db:migrate": "wrangler d1 migrations apply handshake-db",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:prod-gate": "vitest run tests/integration/workflow/workflow-transport.phase-api.test.ts tests/integration/workflow/workflow-transport.invariants.phase-api.test.ts tests/integration/workflow/policy-transport.phase-api.test.ts tests/integration/workflow/agents-transport.phase-api.test.ts tests/integration/workflow/entities-transport.phase-api.test.ts"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260228.0",

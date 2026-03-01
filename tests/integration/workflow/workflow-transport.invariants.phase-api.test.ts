@@ -1,0 +1,253 @@
+import { describe, it, expect } from 'vitest'
+import app from '@/index'
+
+type Env = {
+  DB: D1Database
+  KV: KVNamespace
+  ENVIRONMENT: string
+  GOOGLE_CLIENT_ID: string
+  GOOGLE_CLIENT_SECRET: string
+  GITHUB_CLIENT_ID: string
+  GITHUB_CLIENT_SECRET: string
+  JWT_PRIVATE_KEY: string
+  JWT_PUBLIC_KEY: string
+  JWT_KEY_ID: string
+  IDENTITY_PROVIDER?: 'legacy' | 'clerk'
+  CLERK_JWT_KEY?: string
+  CLERK_SECRET_KEY?: string
+  CLERK_AUDIENCE?: string
+  CLERK_AUTHORIZED_PARTIES?: string
+}
+
+class FakeStmt {
+  private sql: string
+  private db: FakeD1
+  private args: unknown[] = []
+  constructor(db: FakeD1, sql: string) { this.db = db; this.sql = sql }
+  bind(...args: unknown[]) { this.args = args; return this }
+  async run() { this.db.run(this.sql, this.args); return { success: true } }
+  async first<T>() { return this.db.first<T>(this.sql, this.args) }
+  async all<T>() { return { results: this.db.all<T>(this.sql, this.args) } }
+}
+
+class FakeD1 {
+  requests = new Map<string, any>()
+  audits = new Map<string, any[]>()
+  lineage = new Map<string, any[]>()
+  buckets = new Map<string, string>()
+  hitl = new Map<string, any>()
+
+  prepare(sql: string) { return new FakeStmt(this, sql) }
+
+  run(sql: string, args: unknown[]) {
+    if (sql.includes('INSERT INTO request_workflow_requests')) {
+      const [request_id, principal_id, agent_id, action_type, payload_ref, request_timestamp, state, terminal, decision_context_hash, hitl_request_id, result_json] = args
+      this.requests.set(String(request_id), { request_id, principal_id, agent_id, action_type, payload_ref, request_timestamp, state, terminal, decision_context_hash, hitl_request_id, result_json })
+      return
+    }
+    if (sql.includes('INSERT INTO request_workflow_audit_events')) {
+      const [request_id, event_json] = args
+      const k = String(request_id)
+      const arr = this.audits.get(k) ?? []
+      arr.push({ event_json })
+      this.audits.set(k, arr)
+      return
+    }
+    if (sql.includes('INSERT INTO request_workflow_lineage_events')) {
+      const [request_id, event_json] = args
+      const k = String(request_id)
+      const arr = this.lineage.get(k) ?? []
+      arr.push({ event_json })
+      this.lineage.set(k, arr)
+      return
+    }
+    if (sql.includes('INSERT INTO request_workflow_escalation_buckets')) {
+      const [bucket_key, timestamps_json] = args
+      this.buckets.set(String(bucket_key), String(timestamps_json))
+      return
+    }
+    if (sql.includes('INSERT INTO request_workflow_hitl_requests')) {
+      const [id, agent_id, principal_id, tier, action, status, reason, approver_id, created_at, expires_at] = args
+      this.hitl.set(String(id), { id, agent_id, principal_id, tier, action, status, reason, approver_id, created_at, expires_at })
+      return
+    }
+  }
+
+  first<T>(sql: string, args: unknown[]): T | null {
+    if (sql.includes('FROM request_workflow_requests')) {
+      return (this.requests.get(String(args[0])) ?? null) as T | null
+    }
+    if (sql.includes('FROM request_workflow_escalation_buckets')) {
+      const val = this.buckets.get(String(args[0]))
+      return (val ? ({ timestamps_json: val } as T) : null)
+    }
+    if (sql.includes('FROM request_workflow_hitl_requests')) {
+      return (this.hitl.get(String(args[0])) ?? null) as T | null
+    }
+    return null
+  }
+
+  all<T>(sql: string, args: unknown[]): T[] {
+    if (sql.includes('FROM request_workflow_audit_events')) {
+      return ((this.audits.get(String(args[0])) ?? []) as T[])
+    }
+    if (sql.includes('FROM request_workflow_lineage_events')) {
+      return ((this.lineage.get(String(args[0])) ?? []) as T[])
+    }
+    return []
+  }
+}
+
+function makeEnv(): Env {
+  return {
+    DB: new FakeD1() as unknown as D1Database,
+    KV: {} as KVNamespace,
+    ENVIRONMENT: 'test',
+    GOOGLE_CLIENT_ID: 'x',
+    GOOGLE_CLIENT_SECRET: 'x',
+    GITHUB_CLIENT_ID: 'x',
+    GITHUB_CLIENT_SECRET: 'x',
+    JWT_PRIVATE_KEY: 'x',
+    JWT_PUBLIC_KEY: 'x',
+    JWT_KEY_ID: 'x',
+    IDENTITY_PROVIDER: 'legacy',
+  }
+}
+
+describe('WF5 API transport invariants', () => {
+  it('fails closed on malformed request shape', async () => {
+    const env = makeEnv()
+    const res = await app.fetch(new Request('http://local/workflow/requests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ requestId: 'bad-1', actionType: 'payment' })
+    }), env)
+
+    expect(res.status).toBe(400)
+    const body: any = await res.json()
+    expect(body.status).toBe('error')
+    expect(body.reasonCode).toBe('trust_context_missing_binding')
+    expect(body.error).toBe('trust_context_missing_binding')
+    expect(body.responseClass).toBe('blocked')
+  })
+
+  it('returns conflict on terminal mutation attempt', async () => {
+    const env = makeEnv()
+
+    const createRes = await app.fetch(new Request('http://local/workflow/requests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        requestId: 'term-1',
+        principalId: 'p1',
+        agentId: 'a1',
+        actionType: 'payment',
+        payloadRef: 'amount:500',
+        timestamp: Date.now(),
+        privilegedPath: true,
+        context: { amount: 500 }
+      })
+    }), env)
+
+    const created: any = await createRes.json()
+    expect(created.decision).toBe('escalate')
+
+    const rejectRes = await app.fetch(new Request('http://local/workflow/decision-room/action', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'authorization': 'Bearer principal:p1' },
+      body: JSON.stringify({ requestId: 'term-1', hitlRequestId: created.hitlRequestId, action: 'reject' })
+    }), env)
+    expect(rejectRes.status).toBe(200)
+
+    const lateApprove = await app.fetch(new Request('http://local/workflow/decision-room/action', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'authorization': 'Bearer principal:p1' },
+      body: JSON.stringify({ requestId: 'term-1', hitlRequestId: created.hitlRequestId, action: 'approve' })
+    }), env)
+
+    expect(lateApprove.status).toBe(409)
+    const body: any = await lateApprove.json()
+    expect(body.reasonCode).toBe('hitl_terminal_state_immutable')
+    expect(body.error).toBe('hitl_terminal_state_immutable')
+  })
+
+
+
+  it('denies approve action without valid principal authorization', async () => {
+    const env = makeEnv()
+
+    const createRes = await app.fetch(new Request('http://local/workflow/requests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        requestId: 'auth-1',
+        principalId: 'p1',
+        agentId: 'a1',
+        actionType: 'payment',
+        payloadRef: 'amount:500',
+        timestamp: Date.now(),
+        privilegedPath: true,
+        context: { amount: 500 }
+      })
+    }), env)
+
+    const created: any = await createRes.json()
+    expect(created.decision).toBe('escalate')
+
+    const approveRes = await app.fetch(new Request('http://local/workflow/decision-room/action', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ requestId: 'auth-1', hitlRequestId: created.hitlRequestId, action: 'approve' })
+    }), env)
+
+    expect(approveRes.status).toBe(401)
+    const body: any = await approveRes.json()
+    expect(body.reasonCode).toBe('security_missing_authorization_header')
+    expect(body.error).toBe('security_missing_authorization_header')
+  })
+
+  it('artifact gate denies mismatched context hash', async () => {
+    const env = makeEnv()
+
+    const submitRes = await app.fetch(new Request('http://local/workflow/requests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        requestId: 'gate-1',
+        principalId: 'p1',
+        agentId: 'a1',
+        actionType: 'other',
+        payloadRef: 'safe-op',
+        timestamp: Date.now(),
+        privilegedPath: true,
+        context: { policyVersion: 'pv1', trustSnapshotId: 'ts1' }
+      })
+    }), env)
+
+    const artifact: any = await submitRes.json()
+    expect(artifact.decision).toBe('allow')
+
+    const authRes = await app.fetch(new Request('http://local/workflow/authorize-execution', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        request: {
+          requestId: 'gate-1',
+          principalId: 'p1',
+          agentId: 'a1',
+          actionType: 'other',
+          payloadRef: 'safe-op',
+          timestamp: Date.now(),
+          privilegedPath: true,
+          context: { policyVersion: 'pv1', trustSnapshotId: 'ts1' }
+        },
+        artifact: { ...artifact, decisionContextHash: 'ctx_tampered' }
+      })
+    }), env)
+
+    expect(authRes.status).toBe(409)
+    const body: any = await authRes.json()
+    expect(body.reasonCode).toBe('security_decision_context_mismatch')
+    expect(body.error).toBe('security_decision_context_mismatch')
+  })
+})
