@@ -13,6 +13,7 @@
 - `check:release-readiness`
 - `check:env-matrix`
 - `test:w4-invariants`
+- `check:w4-watch-config`
 - `test:sdk-smoke`
 - `check:ap6-report`
 
@@ -59,3 +60,8 @@ W4 invariants (D3):
 - Scope lattice monotonicity must hold (`self <= tenant <= any` under equivalent conditions).
 - Tenant isolation failures must return deterministic reason/status on all protected read endpoints.
 - Equivalent security failure classes must remain status/responseClass deterministic.
+
+
+W4 24h watch (D5):
+- Release must define and validate first-24h signal thresholds and actions.
+- Missing/invalid watch config fails CI.

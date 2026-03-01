@@ -574,3 +574,18 @@ W4-D4 evidence (2026-03-01):
   - `npm run check:release-checklist` ✅
   - `npm test -- tests/unit/workflow/release-checklist.verifier.test.ts` ✅
   - `npm run test:prod-gate` ✅
+
+
+W4-D5 evidence (2026-03-01):
+- Added 24h watch config contract: `docs/workflow/W4-24H-WATCH.json`.
+- Added operator watch/runbook doc: `docs/workflow/W4-24H-WATCH.md`.
+- Added watch config validator: `scripts/check-w4-watch-config.mjs`.
+- Added npm script: `check:w4-watch-config`.
+- Wired CI with watch config validation step.
+- Updated operations/quality docs for D5 policy and enforcement.
+- Verification:
+  - `npm run check:w4-watch-config` ✅
+  - `npm run generate:release-checklist` ✅
+  - `npm run check:release-checklist` ✅
+  - `npm run test:w4-invariants` ✅
+  - `npm run test:prod-gate` ✅
