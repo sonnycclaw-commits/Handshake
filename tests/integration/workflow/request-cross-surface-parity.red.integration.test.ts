@@ -1,5 +1,17 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '@/domain/services/request-workflow-api'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
+
+
+function makeService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
 
 describe('Request Workflow RED (cross-surface parity)', () => {
   it('same context hash yields same decision across api/chat/workflow surfaces', async () => {
@@ -18,9 +30,9 @@ describe('Request Workflow RED (cross-surface parity)', () => {
       }
     }
 
-    const api = await submitRequest({ ...base, requestId: 'surf-api', context: { ...base.context, channel: 'api' } })
-    const chat = await submitRequest({ ...base, requestId: 'surf-chat', context: { ...base.context, channel: 'chat' } })
-    const wf = await submitRequest({ ...base, requestId: 'surf-wf', context: { ...base.context, channel: 'workflow' } })
+    const api = await makeService().submitRequest({ ...base, requestId: 'surf-api', context: { ...base.context, channel: 'api' } })
+    const chat = await makeService().submitRequest({ ...base, requestId: 'surf-chat', context: { ...base.context, channel: 'chat' } })
+    const wf = await makeService().submitRequest({ ...base, requestId: 'surf-wf', context: { ...base.context, channel: 'workflow' } })
 
     expect(api.decision).toBe(chat.decision)
     expect(chat.decision).toBe(wf.decision)

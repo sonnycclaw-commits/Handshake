@@ -1,9 +1,21 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '@/domain/services/request-workflow-api'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
+
+
+function makeService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
 
 describe('Request Reason Codes RED (unit)', () => {
   it('returns standardized security_* reason code for bypass', async () => {
-    const out = await submitRequest({
+    const out = await makeService().submitRequest({
       requestId: 'rc-1',
       principalId: 'p1',
       agentId: 'a1',
@@ -18,7 +30,7 @@ describe('Request Reason Codes RED (unit)', () => {
   })
 
   it('returns standardized hitl_* reason code on timeout path', async () => {
-    const escalated = await submitRequest({
+    const escalated = await makeService().submitRequest({
       requestId: 'rc-2',
       principalId: 'p1',
       agentId: 'a1',
