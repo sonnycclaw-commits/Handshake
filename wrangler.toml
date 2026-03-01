@@ -1,6 +1,7 @@
 name = "handshake"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
 workers_dev = true
 preview_urls = false
 
@@ -39,3 +40,4 @@ ENVIRONMENT = "production"
 # - JWT_PRIVATE_KEY (base64-encoded PKCS#8)
 # - JWT_PUBLIC_KEY (base64-encoded SPKI)
 # - JWT_KEY_ID (e.g., "key-1")
+# - INTERNAL_TRUST_SHARED_SECRET (HS256 key for internal trust tokens)

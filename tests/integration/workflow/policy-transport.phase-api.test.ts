@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import app from '@/index'
+import { createInternalTrustToken } from '@/middleware/internal-trust-context'
 
 type Env = {
   DB: D1Database
@@ -17,6 +18,7 @@ type Env = {
   CLERK_SECRET_KEY?: string
   CLERK_AUDIENCE?: string
   CLERK_AUTHORIZED_PARTIES?: string
+  INTERNAL_TRUST_SHARED_SECRET?: string
 }
 
 class FakeStmt {
@@ -150,6 +152,7 @@ function makeEnv(): Env {
     JWT_PUBLIC_KEY: 'x',
     JWT_KEY_ID: 'x',
     IDENTITY_PROVIDER: 'legacy',
+    INTERNAL_TRUST_SHARED_SECRET: 'trust-secret-test',
   }
 }
 
@@ -159,7 +162,7 @@ describe('Policy rail transport', () => {
 
     const simulateRes = await app.fetch(new Request('http://local/policy/simulate', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', 'x-identity-envelope': JSON.stringify({ principalId: 'p1', subjectType: 'human', roles: [], scopes: [] }) },
       body: JSON.stringify({
         scope: 'global',
         rules: [
@@ -174,9 +177,23 @@ describe('Policy rail transport', () => {
     expect(sim.status).toBe('ok')
     expect(sim.blastRadius.affectedAgents).toBeGreaterThan(0)
 
+    const nowSec = Math.floor(Date.now() / 1000)
+    const token = createInternalTrustToken({
+      iss: 'handshake-edge',
+      aud: 'handshake-core',
+      sub: 'policy.apply',
+      iat: nowSec,
+      exp: nowSec + 60,
+      jti: 'policy-transport-jti-1',
+    }, env.INTERNAL_TRUST_SHARED_SECRET!)
+
     const applyRes = await app.fetch(new Request('http://local/policy/apply', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        'x-identity-envelope': JSON.stringify({ principalId: 'p1', subjectType: 'human', roles: [], scopes: [] }),
+        'x-internal-trust-context': token,
+      },
       body: JSON.stringify({
         scope: 'global',
         rules: [

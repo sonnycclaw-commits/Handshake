@@ -4,12 +4,12 @@ import { resolve } from 'path'
 export default defineConfig({
   test: {
     globals: true,
-    include: ['tests/**/*.test.ts'],
+    include: ['tests/**/*.test.ts', 'sdk/**/*.test.ts'],
     exclude: ['node_modules', 'archive-*'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'json'],
-      include: ['src/**/*.ts'],
+      include: ['src/**/*.ts', 'sdk/typescript/src/**/*.ts'],
       exclude: [
         '**/*.test.ts',
         '**/*.d.ts',

@@ -12,6 +12,7 @@ export type RequestState =
 export interface RequestInput {
   requestId: string
   principalId: string
+  tenantId?: string
   agentId: string
   actionType: 'payment' | 'data_access' | 'credential_use' | 'external_call' | 'other'
   payloadRef: string

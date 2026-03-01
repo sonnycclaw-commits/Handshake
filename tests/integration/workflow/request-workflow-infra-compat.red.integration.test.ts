@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, resolveRequestHitl, getRequestAudit } from '@/domain/services/request-workflow'
+import { submitRequest, resolveRequestHitl, getRequestAudit } from '@/domain/services/request-workflow-api'
 import { getHITLRequest } from '@/domain/services/hitl-workflow'
 
 describe('Request Workflow RED (infra compatibility)', () => {

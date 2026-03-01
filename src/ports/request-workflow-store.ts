@@ -23,6 +23,7 @@ export interface StoredRequestResult {
 export interface StoredRequestRecord {
   requestId: string
   principalId: string
+  tenantId?: string
   agentId: string
   actionType: 'payment' | 'data_access' | 'credential_use' | 'external_call' | 'other'
   payloadRef: string

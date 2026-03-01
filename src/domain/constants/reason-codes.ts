@@ -35,6 +35,19 @@ export const KNOWN_REASON_CODES = [
   'security_token_invalid',
   'security_identity_provider_not_configured',
 
+  'security_missing_identity_envelope',
+  'security_invalid_identity_envelope',
+  'security_identity_envelope_required',
+  'security_identity_subject_mismatch',
+  'security_missing_internal_trust_context',
+  'security_invalid_internal_trust_context',
+  'security_internal_trust_context_expired',
+  'security_internal_trust_config_missing',
+  'security_replay_detected',
+  'security_replay_guard_unavailable',
+  'security_read_scope_denied',
+  'security_read_tenant_mismatch',
+
   // hitl
   'hitl_sensitive_ambiguous_escalated',
   'hitl_boundary_escalated',

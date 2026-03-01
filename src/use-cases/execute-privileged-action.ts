@@ -1,5 +1,5 @@
 import type { DecisionArtifact, RequestInput } from '../domain/services/request-workflow-types'
-import { authorizePrivilegedExecution } from '../domain/services/request-workflow'
+import type { RequestWorkflowService } from '../domain/services/request-workflow.service.types'
 import { toResponseClass } from '../domain/constants/reason-codes'
 import type { ExecutionContext, TransactionAction, TransactionResult, VaultAdapter } from '../ports/types'
 
@@ -13,6 +13,7 @@ export type ExecutePrivilegedActionInput = {
 
 export type ExecutePrivilegedActionDeps = {
   vault: VaultAdapter
+  workflowService: RequestWorkflowService
 }
 
 export type ExecutePrivilegedActionResult = {
@@ -26,7 +27,7 @@ export async function executePrivilegedAction(
   input: ExecutePrivilegedActionInput,
   deps: ExecutePrivilegedActionDeps
 ): Promise<ExecutePrivilegedActionResult> {
-  const gate = await authorizePrivilegedExecution({
+  const gate = await deps.workflowService.authorizePrivilegedExecution({
     request: input.request,
     artifact: input.artifact,
   })

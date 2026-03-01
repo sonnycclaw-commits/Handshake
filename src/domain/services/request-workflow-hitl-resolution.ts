@@ -1,6 +1,5 @@
 import type { RequestInput, RequestRecord, RequestResult } from './request-workflow-types'
 import type { RequestWorkflowStore } from '../../ports/request-workflow-store'
-import { toStoredRecord } from './request-workflow-persistence'
 
 export interface ResolveHitlInput {
   requestId: string
@@ -14,7 +13,6 @@ type Deps = {
   timeoutHITL: (id: string, now?: number) => Promise<unknown>
   rejectHITL: (id: string, meta: { reason?: string }) => Promise<unknown>
   approveHITL: (id: string, meta: { approverId?: string }) => Promise<unknown>
-  appendAuditLegacy: (requestId: string, event: Record<string, unknown>) => void
   appendLineage: (requestId: string, event: Record<string, unknown>) => Promise<void>
   incrWF5Metric: (metric: string) => Promise<void>
   deny: (input: RequestInput, reasonCode: string, tier?: number) => RequestResult
@@ -34,7 +32,19 @@ async function persistTerminal(
     terminal: true,
   }
 
-  await deps.workflowStore.saveRequest(toStoredRecord(next.input, next.result))
+  await deps.workflowStore.saveRequest({
+    requestId: next.input.requestId,
+    principalId: next.input.principalId,
+    agentId: next.input.agentId,
+    actionType: next.input.actionType,
+    payloadRef: next.input.payloadRef,
+    requestTimestamp: next.input.timestamp,
+    state: next.state,
+    terminal: next.terminal,
+    decisionContextHash: next.decisionContextHash,
+    hitlRequestId: next.hitlRequestId,
+    result: next.result,
+  })
 
   const event = {
     event: 'hitl_resolved',
@@ -44,7 +54,6 @@ async function persistTerminal(
     timestamp: out.timestamp,
   }
 
-  deps.appendAuditLegacy(record.input.requestId, event)
   await deps.workflowStore.appendAudit(record.input.requestId, event)
   await deps.appendLineage(record.input.requestId, { ...event, event: 'request_terminal' })
 
@@ -80,8 +89,7 @@ export async function resolveApproveBranch(record: RequestRecord, deps: Deps, ap
       reasonCode: out.reasonCode,
       timestamp: out.timestamp,
     }
-    deps.appendAuditLegacy(record.input.requestId, event)
-    await deps.workflowStore.appendAudit(record.input.requestId, event)
+      await deps.workflowStore.appendAudit(record.input.requestId, event)
     await deps.appendLineage(record.input.requestId, { ...event, event: 'request_terminal' })
     return {
       ...record,
@@ -99,7 +107,19 @@ export async function resolveApproveBranch(record: RequestRecord, deps: Deps, ap
     terminal: true,
   }
 
-  await deps.workflowStore.saveRequest(toStoredRecord(next.input, next.result))
+  await deps.workflowStore.saveRequest({
+    requestId: next.input.requestId,
+    principalId: next.input.principalId,
+    agentId: next.input.agentId,
+    actionType: next.input.actionType,
+    payloadRef: next.input.payloadRef,
+    requestTimestamp: next.input.timestamp,
+    state: next.state,
+    terminal: next.terminal,
+    decisionContextHash: next.decisionContextHash,
+    hitlRequestId: next.hitlRequestId,
+    result: next.result,
+  })
 
   const event = {
     event: 'hitl_resolved',
@@ -108,7 +128,6 @@ export async function resolveApproveBranch(record: RequestRecord, deps: Deps, ap
     reasonCode: out.reasonCode,
     timestamp: out.timestamp,
   }
-  deps.appendAuditLegacy(record.input.requestId, event)
   await deps.workflowStore.appendAudit(record.input.requestId, event)
 
   return next

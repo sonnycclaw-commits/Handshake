@@ -7,17 +7,31 @@
     "deploy": "wrangler deploy",
     "db:migrate": "wrangler d1 migrations apply handshake-db",
     "test": "vitest run",
-    "test:prod-gate": "vitest run tests/integration/workflow/workflow-transport.phase-api.test.ts tests/integration/workflow/workflow-transport.invariants.phase-api.test.ts tests/integration/workflow/policy-transport.phase-api.test.ts tests/integration/workflow/agents-transport.phase-api.test.ts tests/integration/workflow/entities-transport.phase-api.test.ts"
+    "test:prod-gate": "vitest run tests/integration/workflow/workflow-transport.phase-api.test.ts tests/integration/workflow/workflow-transport.invariants.phase-api.test.ts tests/integration/workflow/policy-transport.phase-api.test.ts tests/integration/workflow/agents-transport.phase-api.test.ts tests/integration/workflow/entities-transport.phase-api.test.ts",
+    "check:openapi": "node scripts/check-openapi.mjs",
+    "check:sdk-drift": "node scripts/check-sdk-drift.mjs",
+    "check:ap6-report": "node scripts/verify-ap6-gate-report.mjs",
+    "test:ap6-gate": "node scripts/test-ap6-gate.mjs",
+    "test:sdk-smoke": "vitest run sdk/typescript/tests/quickstart.smoke.test.ts",
+    "sdk:generate": "node scripts/generate-sdk.mjs",
+    "sdk:check-generated": "node -e \"const fs=require('fs');const required=['sdk/typescript/generated/sdk.gen.ts','sdk/typescript/generated/types.gen.ts'];for(const p of required){if(!fs.existsSync(p)){console.error(\\`Missing generated SDK file: ${p}\\`);process.exit(1)}}console.log('SDK generated files present')\"",
+    "check:security-parity": "node scripts/check-protected-route-security-parity.mjs",
+    "check:reason-code-map": "node scripts/check-reason-code-map.mjs",
+    "check:no-workflow-shim-imports": "node scripts/check-no-workflow-shim-imports.mjs",
+    "check:schema-preflight": "node scripts/check-schema-preflight.mjs"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "^12.1.0",
     "@cloudflare/workers-types": "^4.20260228.0",
+    "@hey-api/openapi-ts": "^0.93.1",
     "@types/node": "^25.3.2",
     "@vitest/coverage-v8": "^4.0.18",
     "fast-check": "^4.5.3",
     "hono": "4.12.3",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18",
-    "wrangler": "^4.69.0"
+    "wrangler": "^4.69.0",
+    "yaml": "^2.8.2"
   },
   "dependencies": {
     "@clerk/backend": "^2.33.0",

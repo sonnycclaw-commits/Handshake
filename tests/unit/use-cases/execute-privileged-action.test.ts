@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { executePrivilegedAction } from '@/use-cases/execute-privileged-action'
-import { submitRequest } from '@/domain/services/request-workflow'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
+import { DefaultInMemoryRequestWorkflowStore } from '@/domain/services/request-workflow-in-memory-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
 import type { VaultAdapter } from '@/ports/types'
 
 class MockVault implements VaultAdapter {
@@ -24,9 +26,19 @@ class MockVault implements VaultAdapter {
   }
 }
 
+function makeWorkflowService() {
+  return createRequestWorkflowService({
+    requestStore: new DefaultInMemoryRequestWorkflowStore(),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
+
 describe('executePrivilegedAction (C6)', () => {
   it('blocks privileged execution without valid artifact', async () => {
     const vault = new MockVault()
+    const workflowService = makeWorkflowService()
 
     const request = {
       requestId: 'c6-1',
@@ -45,7 +57,7 @@ describe('executePrivilegedAction (C6)', () => {
       credentialId: 'cred_1',
       action: { type: 'noop', params: {} },
       executionContext: { agentId: 'a1', principalId: 'p1', timestamp: Date.now() }
-    }, { vault })
+    }, { vault, workflowService })
 
     expect(out.allowed).toBe(false)
     expect(out.responseClass).toBe('blocked')
@@ -54,6 +66,7 @@ describe('executePrivilegedAction (C6)', () => {
 
   it('allows execution only with valid allow artifact', async () => {
     const vault = new MockVault()
+    const workflowService = makeWorkflowService()
 
     const request = {
       requestId: 'c6-2',
@@ -66,7 +79,7 @@ describe('executePrivilegedAction (C6)', () => {
       context: { policyVersion: 'pv1', trustSnapshotId: 'ts1' }
     }
 
-    const artifact = await submitRequest(request)
+    const artifact = await workflowService.submitRequest(request)
     expect(artifact.decision).toBe('allow')
 
     const out = await executePrivilegedAction({
@@ -75,7 +88,7 @@ describe('executePrivilegedAction (C6)', () => {
       credentialId: 'cred_1',
       action: { type: 'noop', params: {} },
       executionContext: { agentId: 'a1', principalId: 'p1', timestamp: Date.now() }
-    }, { vault })
+    }, { vault, workflowService })
 
     expect(out.allowed).toBe(true)
     expect(out.responseClass).toBe('ok')

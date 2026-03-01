@@ -1,0 +1,54 @@
+{
+  "generatedAt": "2026-03-01T07:36:00.796Z",
+  "checks": [
+    {
+      "label": "npx vitest run tests/red/ap6/identity-envelope.ap6.red.test.ts tests/red/ap6/trust-boundary.ap6.red.test.ts tests/red/ap6/openapi-parity.ap6.red.test.ts tests/red/ap6/sdk-accessibility.ap6.red.test.ts tests/red/ap6/ap6-gates.ap6.red.test.ts",
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 2369
+    },
+    {
+      "label": "npm run test:prod-gate",
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 2189
+    },
+    {
+      "label": "npm run check:openapi",
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 495
+    },
+    {
+      "label": "npm run sdk:generate",
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 1327
+    },
+    {
+      "label": "npm run sdk:check-generated",
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 151
+    },
+    {
+      "label": "npm run check:sdk-drift",
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 253
+    },
+    {
+      "label": "npm run test:sdk-smoke",
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 859
+    },
+    {
+      "label": "npx tsc --noEmit",
+      "status": "pass",
+      "exitCode": 0,
+      "durationMs": 2838
+    }
+  ],
+  "status": "pass"
+}

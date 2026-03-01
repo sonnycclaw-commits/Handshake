@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { setRequestWorkflowStore, submitRequest } from '@/domain/services/request-workflow'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
 import { D1RequestWorkflowStore } from '@/adapters/persistence/d1-request-workflow-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
 
 class FakeStmt {
   private sql: string
@@ -64,17 +65,25 @@ class FakeD1 {
   }
 }
 
+function makeService(db: D1Database) {
+  return createRequestWorkflowService({
+    requestStore: new D1RequestWorkflowStore(db),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
+  })
+}
+
 describe('Request escalation durable continuity (C4)', () => {
   it('throttle survives store rebind (simulated process restart)', async () => {
     const fakeDb = new FakeD1() as unknown as D1Database
-    const storeA = new D1RequestWorkflowStore(fakeDb)
-    setRequestWorkflowStore(storeA)
+    const serviceA = makeService(fakeDb)
 
     const principalId = 'p-cont'
     const agentId = 'a-cont'
 
     for (let i = 0; i < 5; i++) {
-      const out = await submitRequest({
+      const out = await serviceA.submitRequest({
         requestId: `cont-a-${i}`,
         principalId,
         agentId,
@@ -87,11 +96,9 @@ describe('Request escalation durable continuity (C4)', () => {
       expect(['escalate', 'deny']).toContain(out.decision)
     }
 
-    // Simulate restart: new adapter instance, same underlying durable DB
-    const storeB = new D1RequestWorkflowStore(fakeDb)
-    setRequestWorkflowStore(storeB)
+    const serviceB = makeService(fakeDb)
 
-    const afterRestart = await submitRequest({
+    const afterRestart = await serviceB.submitRequest({
       requestId: 'cont-b-1',
       principalId,
       agentId,

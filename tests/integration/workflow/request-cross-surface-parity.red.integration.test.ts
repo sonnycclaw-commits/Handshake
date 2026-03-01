@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '@/domain/services/request-workflow'
+import { submitRequest } from '@/domain/services/request-workflow-api'
 
 describe('Request Workflow RED (cross-surface parity)', () => {
   it('same context hash yields same decision across api/chat/workflow surfaces', async () => {

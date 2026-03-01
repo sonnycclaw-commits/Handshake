@@ -141,6 +141,10 @@ function makeEnv(): Env {
   }
 }
 
+const identityHeaders = {
+  'x-identity-envelope': JSON.stringify({ principalId: 'p1', subjectType: 'human', roles: [], scopes: [] }),
+}
+
 describe('WF5 API transport rail', () => {
   it('creates request then loads decision-room + evidence', async () => {
     const env = makeEnv()
@@ -166,13 +170,13 @@ describe('WF5 API transport rail', () => {
     expect(created.requestId).toBe('wf-api-1')
     expect(['allow', 'deny', 'escalate']).toContain(created.decision)
 
-    const roomRes = await app.fetch(new Request('http://local/workflow/decision-room/wf-api-1'), env)
+    const roomRes = await app.fetch(new Request('http://local/workflow/decision-room/wf-api-1', { headers: identityHeaders }), env)
     expect(roomRes.status).toBe(200)
     const room: any = await roomRes.json()
     expect(room.requestId).toBe('wf-api-1')
     expect(room.artifact).toBeDefined()
 
-    const evRes = await app.fetch(new Request('http://local/workflow/evidence/wf-api-1'), env)
+    const evRes = await app.fetch(new Request('http://local/workflow/evidence/wf-api-1', { headers: identityHeaders }), env)
     expect(evRes.status).toBe(200)
     const evidence: any[] = await evRes.json()
     expect(Array.isArray(evidence)).toBe(true)
@@ -205,7 +209,7 @@ describe('WF5 API transport rail', () => {
 
     const actionRes = await app.fetch(new Request('http://local/workflow/decision-room/action', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: { 'content-type': 'application/json', 'x-identity-envelope': JSON.stringify({ principalId: 'p1', subjectType: 'human', roles: [], scopes: [] }) },
       body: JSON.stringify({
         requestId: created.requestId,
         hitlRequestId: created.hitlRequestId,
@@ -217,6 +221,50 @@ describe('WF5 API transport rail', () => {
     const body: any = await actionRes.json()
     expect(body.reasonCode).toBe('trust_context_invalid_request_shape')
     expect(body.error).toBe('trust_context_invalid_request_shape')
+  })
+
+
+
+  it('approves with valid identity envelope', async () => {
+    const env = makeEnv()
+
+    const createReq = new Request('http://local/workflow/requests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        requestId: 'wf-api-4',
+        principalId: 'p1',
+        agentId: 'a1',
+        actionType: 'payment',
+        payloadRef: 'amount:500',
+        timestamp: Date.now(),
+        privilegedPath: true,
+        context: { amount: 500 }
+      })
+    })
+
+    const createdRes = await app.fetch(createReq, env)
+    const created: any = await createdRes.json()
+    expect(created.decision).toBe('escalate')
+
+    const actionRes = await app.fetch(new Request('http://local/workflow/decision-room/action', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-identity-envelope': JSON.stringify({ principalId: 'p1', subjectType: 'human', roles: [], scopes: [] })
+      },
+      body: JSON.stringify({
+        requestId: created.requestId,
+        hitlRequestId: created.hitlRequestId,
+        action: 'approve'
+      })
+    }), env)
+
+    expect(actionRes.status).toBe(200)
+    const actionOut: any = await actionRes.json()
+    expect(actionOut.status).toBe('ok')
+    expect(actionOut.reasonCode).toBe('hitl_approved')
+    expect(actionOut.decision).toBe('allow')
   })
 
   it('maps FE deny action to backend reject semantics', async () => {
@@ -243,7 +291,7 @@ describe('WF5 API transport rail', () => {
 
     const actionRes = await app.fetch(new Request('http://local/workflow/decision-room/action', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'authorization': 'Bearer principal:p1' },
+      headers: { 'content-type': 'application/json', 'x-identity-envelope': JSON.stringify({ principalId: 'p1', subjectType: 'human', roles: [], scopes: [] }) },
       body: JSON.stringify({
         requestId: created.requestId,
         hitlRequestId: created.hitlRequestId,
