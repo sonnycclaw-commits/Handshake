@@ -61,6 +61,12 @@ jobs:
       - name: W4 invariants
         run: npm run test:w4-invariants
 
+      - name: Generate release checklist artifact
+        run: npm run generate:release-checklist
+
+      - name: Verify release checklist artifact
+        run: npm run check:release-checklist
+
       - name: SDK drift check
         run: npm run check:sdk-drift
 

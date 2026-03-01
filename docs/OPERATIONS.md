@@ -147,3 +147,24 @@ Current enforced rules:
 4. `[env.production.vars].ENVIRONMENT` must equal `"production"`
 
 If this gate fails, do not deploy.
+
+
+## W4 Release Checklist Automation (D4)
+
+Before release, generate and verify checklist artifact:
+
+```bash
+npm run generate:release-checklist
+npm run check:release-checklist
+```
+
+Artifact path:
+- `artifacts/release-checklist.json`
+
+Required passing gates in artifact:
+- `check:schema-preflight`
+- `check:env-matrix`
+- `test:prod-gate`
+- `check:release-readiness`
+
+If checklist verification fails, do not release.

@@ -557,3 +557,20 @@ W4-D3 evidence (2026-03-01):
   - `npm run test:w4-invariants` ✅
   - `npm run test:prod-gate` ✅
   - `npm run check:openapi` ✅
+
+
+W4-D4/D5 premortem (2026-03-01): `docs/workflow/W4-D4D5-PREMORTEM.md` (locked before execution).
+
+
+W4-D4 evidence (2026-03-01):
+- Added release checklist generator: `scripts/generate-release-checklist.mjs`.
+- Added release checklist verifier: `scripts/check-release-checklist.mjs`.
+- Added npm scripts: `generate:release-checklist`, `check:release-checklist`.
+- Wired CI with checklist generate + verify steps.
+- Added verifier tests: `tests/unit/workflow/release-checklist.verifier.test.ts`.
+- Updated operations contract for release checklist automation.
+- Verification:
+  - `npm run generate:release-checklist` ✅
+  - `npm run check:release-checklist` ✅
+  - `npm test -- tests/unit/workflow/release-checklist.verifier.test.ts` ✅
+  - `npm run test:prod-gate` ✅
