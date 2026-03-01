@@ -31,8 +31,28 @@ metricsRoutes.get('/metrics/summary', async (c) => {
   })
 })
 
+const ALLOWED_METRICS = new Set([
+  'uair',
+  'airt_p50_ms',
+  'airt_p95_ms',
+  'gar',
+  'tca',
+  'security_denial_total',
+  'security_replay_detected_total',
+  'security_replay_guard_unavailable_total',
+])
+
 metricsRoutes.get('/metrics/series', async (c) => {
-  const metric = c.req.query('metric') || 'escalation_rate'
+  const metric = c.req.query('metric') || 'security_denial_total'
+  if (!ALLOWED_METRICS.has(metric)) {
+    return c.json({
+      status: 'error',
+      error: 'invalid_metric_query',
+      message: `Unsupported metric '${metric}'. Allowed: ${Array.from(ALLOWED_METRICS).join(', ')}`,
+      responseClass: 'blocked',
+    }, 400)
+  }
+
   const bucket = c.req.query('bucket') === 'day' ? 'day' : 'hour'
   const now = Date.now()
   const windowMs = parseWindow(c.req.query('window'))

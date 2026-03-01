@@ -402,7 +402,7 @@ AP6 W5 hardening evidence (2026-03-01):
 
 - [ ] W3-C0 Premortem lock: W3 constraints + blast-radius notes captured (one-slice commits, no gate bypass)
 - [x] W3-C1 Emit structured telemetry for key denial/replay failures
-- [ ] W3-C2 Build baseline dashboards (reason trend, endpoint failure, replay events)
+- [x] W3-C2 Build baseline dashboards (reason trend, endpoint failure, replay events)
 - [ ] W3-C3 Configure alerts for replay guard unavailable, denial spikes, tenant mismatch spikes
 - [ ] W3-C4 Link each alert to runbook actions in OPERATIONS
 
@@ -458,3 +458,14 @@ W3-C1 evidence (2026-03-01):
   - `npm test -- tests/integration/workflow/w3-structured-telemetry.integration.test.ts` ✅
   - `npm run test:prod-gate` ✅
   - `npm run check:openapi` ✅
+
+
+W3-C2 evidence (2026-03-01):
+- Metrics summary contract enriched with denial/replay trend counters: `totalEvents`, `denialEvents`, `replayDetectedEvents`, `replayGuardUnavailableEvents`.
+- Metrics series endpoint now enforces explicit allowed metric query set and blocks invalid values with deterministic error (`invalid_metric_query`, 400, `responseClass=blocked`).
+- OpenAPI tightened for metrics contracts (`MetricsSummary` typed fields + `/metrics/series` metric enum).
+- Dashboard/query contract test added: `tests/integration/workflow/w3-metrics-dashboard-contract.integration.test.ts`.
+- Verification:
+  - `npm test -- tests/integration/workflow/w3-metrics-dashboard-contract.integration.test.ts` ✅
+  - `npm run check:openapi` ✅
+  - `npm run test:prod-gate` ✅

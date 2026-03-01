@@ -28,6 +28,10 @@ export type MetricsSummary = {
   airtP95Ms: number
   gar: number
   tca: number
+  totalEvents: number
+  denialEvents: number
+  replayDetectedEvents: number
+  replayGuardUnavailableEvents: number
 }
 
 export function computeMetricsSummary(events: MetricsEvent[]): MetricsSummary {
@@ -48,6 +52,9 @@ export function computeMetricsSummary(events: MetricsEvent[]): MetricsSummary {
   const gar = autonomous.length ? governedAutonomous.length / autonomous.length : 0
 
   const governedActions = events.filter((e) => e.isTerminal)
+  const denialEvents = events.filter((e) => e.decision === 'deny').length
+  const replayDetectedEvents = events.filter((e) => e.reasonCode === 'security_replay_detected').length
+  const replayGuardUnavailableEvents = events.filter((e) => e.reasonCode === 'security_replay_guard_unavailable').length
   const totalCost = governedActions.reduce(
     (acc, e) =>
       acc +
@@ -58,7 +65,17 @@ export function computeMetricsSummary(events: MetricsEvent[]): MetricsSummary {
   )
   const tca = governedActions.length ? totalCost / governedActions.length : 0
 
-  return { uair, airtP50Ms, airtP95Ms, gar, tca }
+  return {
+    uair,
+    airtP50Ms,
+    airtP95Ms,
+    gar,
+    tca,
+    totalEvents: events.length,
+    denialEvents,
+    replayDetectedEvents,
+    replayGuardUnavailableEvents,
+  }
 }
 
 function percentile(values: number[], p: number): number {
