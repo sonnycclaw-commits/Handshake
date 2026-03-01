@@ -59,6 +59,7 @@ Never disable trust checks to recover availability.
 Run before deploy:
 ```bash
 npm run check:schema-preflight
+npm run check:release-readiness
 ```
 
 
@@ -73,7 +74,8 @@ Operator action:
 1. Pause privileged mutation retries (`/workflow/decision-room/action`, `/policy/apply`).
 2. Validate D1 health and replay table availability (`replay_guards`).
 3. Run schema preflight and verify migrations:
-   - `npm run check:schema-preflight`
+   - `npm run check:schema-preflight
+npm run check:release-readiness`
 4. Validate trust/replay rails with gates:
    - `npm run test:prod-gate`
 5. Resume traffic only after deterministic replay behavior is restored.
@@ -108,3 +110,19 @@ Operator action:
    - `npm run check:security-parity`
    - `npm run test:prod-gate`
 5. If cross-tenant leakage risk is suspected, keep fail-closed posture and escalate incident.
+
+
+## W4 Release Safety Gates (D1)
+
+Release path must fail closed unless migration + runtime safety checks pass.
+
+Primary gate:
+```bash
+npm run check:release-readiness
+```
+
+This currently enforces:
+1. `check:schema-preflight` (required migration + replay/tenant wiring)
+2. `test:prod-gate` (critical transport/invariant suite)
+
+If this gate fails, do not deploy.

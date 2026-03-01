@@ -18,7 +18,8 @@
     "check:security-parity": "node scripts/check-protected-route-security-parity.mjs",
     "check:reason-code-map": "node scripts/check-reason-code-map.mjs",
     "check:no-workflow-shim-imports": "node scripts/check-no-workflow-shim-imports.mjs",
-    "check:schema-preflight": "node scripts/check-schema-preflight.mjs"
+    "check:schema-preflight": "node scripts/check-schema-preflight.mjs",
+    "check:release-readiness": "node scripts/check-release-readiness.mjs"
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",

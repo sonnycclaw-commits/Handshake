@@ -415,7 +415,7 @@ AP6 W5 hardening evidence (2026-03-01):
 
 ### Week 4 — Release Discipline & Environment Safety
 
-- [ ] W4-D1 Migration confirmation gate in deploy path
+- [x] W4-D1 Migration confirmation gate in deploy path
 - [ ] W4-D2 Enforce environment matrix (no prod with dev bypass flags)
 - [ ] W4-D3 Add invariant/property tests:
   - [ ] scope lattice monotonicity
@@ -516,3 +516,14 @@ W3 smell-burn follow-up (2026-03-01):
 W4 kickoff prep (2026-03-01):
 - Airway clear confirmed: main up-to-date, no open PRs, W3 merged.
 - Next action: start W4 with premortem-first slice (release discipline + environment safety).
+
+
+W4-D1 evidence (2026-03-01):
+- Hardened schema preflight (`scripts/check-schema-preflight.mjs`) to require replay+tenant migrations and wiring checks.
+- Added release readiness gate (`scripts/check-release-readiness.mjs`) chaining schema preflight + prod transport gate.
+- Wired CI to execute `npm run check:release-readiness`.
+- Added operations contract for W4 release safety gate in `docs/OPERATIONS.md`.
+- Verification:
+  - `npm run check:schema-preflight` ✅
+  - `npm run check:release-readiness` ✅
+  - `npm run test:prod-gate` ✅
