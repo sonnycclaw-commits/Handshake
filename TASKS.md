@@ -511,3 +511,8 @@ W3 smell-burn follow-up (2026-03-01):
 - Added canonical alert registry + env threshold profiles: `src/domain/services/wf5-alerts-registry.ts`.
 - Wired SLO evaluator to registry/profile defaults (reduced hardcoded drift risk).
 - Added registry coverage: `tests/unit/workflow/wf5-alerts-registry.test.ts`.
+
+
+W4 kickoff prep (2026-03-01):
+- Airway clear confirmed: main up-to-date, no open PRs, W3 merged.
+- Next action: start W4 with premortem-first slice (release discipline + environment safety).
