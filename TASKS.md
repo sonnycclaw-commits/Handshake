@@ -404,7 +404,7 @@ AP6 W5 hardening evidence (2026-03-01):
 - [x] W3-C1 Emit structured telemetry for key denial/replay failures
 - [x] W3-C2 Build baseline dashboards (reason trend, endpoint failure, replay events)
 - [x] W3-C3 Configure alerts for replay guard unavailable, denial spikes, tenant mismatch spikes
-- [ ] W3-C4 Link each alert to runbook actions in OPERATIONS
+- [x] W3-C4 Link each alert to runbook actions in OPERATIONS
 
 **Acceptance checks:**
 - [ ] W3-AC1 Critical authz/replay failures are observable in real time
@@ -486,3 +486,22 @@ W3-C3 evidence (2026-03-01):
   - `npm test -- tests/unit/workflow/wf5-ops-metrics.test.ts tests/unit/workflow/wf5-ops-metrics.c3-alerts.test.ts tests/integration/workflow/wf5-ops-alerts.integration.test.ts` ✅
   - `npm run test:prod-gate` ✅
   - `npm run check:openapi` ✅
+
+
+W3-C4 evidence (2026-03-01):
+- Added explicit runbook mappings in `docs/OPERATIONS.md` for:
+  - `alert_replay_guard_unavailable`
+  - `alert_denial_spike`
+  - `alert_tenant_mismatch_spike`
+- Added workflow-level alert-to-action contract in `docs/WORKFLOWS.md` (WF-009).
+- Enforced operating rule: no alert suppression without corrective action evidence.
+- Verification:
+  - docs consistency pass (`OPERATIONS`, `WORKFLOWS`) ✅
+  - `npm run test:prod-gate` ✅
+  - `npm run check:openapi` ✅
+
+
+W3 post-run audits (2026-03-01):
+- Product premortem: `docs/workflow/W3-PRODUCT-PREMORTEM.md`
+- Workflow premortem: `docs/workflow/W3-WORKFLOW-PREMORTEM.md`
+- Smell check: `docs/workflow/W3-SMELL-CHECK.md`

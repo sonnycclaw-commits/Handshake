@@ -182,3 +182,19 @@ Delegated authority never exceeds delegator authority.
 ## Reason/Status determinism
 
 All known reason codes must map to deterministic HTTP status and response class. Unknown mappings are treated as contract failures and blocked in CI.
+
+
+---
+
+## WF-009 — Observability Alert to Action Mapping (W3 C4)
+
+### Purpose
+Convert telemetry alerts into deterministic operator actions (no passive dashboards).
+
+### Alerts
+- `alert_replay_guard_unavailable` -> run replay-guard recovery path in `docs/OPERATIONS.md`.
+- `alert_denial_spike` -> perform reason trend triage + contract/parity checks.
+- `alert_tenant_mismatch_spike` -> validate tenant claim mapping + scope hierarchy + protected-route parity.
+
+### Rule
+When any W3 alert fires, operator response must be executed via the mapped runbook; do not suppress alerts without corrective action evidence.
