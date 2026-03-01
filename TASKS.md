@@ -505,3 +505,9 @@ W3 post-run audits (2026-03-01):
 - Product premortem: `docs/workflow/W3-PRODUCT-PREMORTEM.md`
 - Workflow premortem: `docs/workflow/W3-WORKFLOW-PREMORTEM.md`
 - Smell check: `docs/workflow/W3-SMELL-CHECK.md`
+
+
+W3 smell-burn follow-up (2026-03-01):
+- Added canonical alert registry + env threshold profiles: `src/domain/services/wf5-alerts-registry.ts`.
+- Wired SLO evaluator to registry/profile defaults (reduced hardcoded drift risk).
+- Added registry coverage: `tests/unit/workflow/wf5-alerts-registry.test.ts`.

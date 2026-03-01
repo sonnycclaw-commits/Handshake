@@ -32,8 +32,8 @@ Owner: Sonny
 
 ## Residual Smells (to monitor)
 
-- Threshold tuning may be environment-sensitive; defaults could be noisy in early production.
-- Metrics route currently enforces allowed metric set in code; consider central config registry to avoid duplication.
+- Threshold tuning is now environment-profiled (prod/staging/default) via alert registry.
+- Metrics route and alert rails now use explicit registries; monitor for future drift as surfaces expand.
 
 ## Recommended Follow-up
 

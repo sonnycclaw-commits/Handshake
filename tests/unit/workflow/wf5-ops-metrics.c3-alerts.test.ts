@@ -11,6 +11,7 @@ describe('W3-C3 alert thresholds', () => {
       escalationTotal: 5,
       terminalMutationDeniedTotal: 0,
       replayGuardUnavailableTotal: 1,
+      environment: 'production',
       thresholds: { replayGuardUnavailableAlertCount: 1 },
     })
 
@@ -27,6 +28,7 @@ describe('W3-C3 alert thresholds', () => {
       terminalMutationDeniedTotal: 0,
       securityDenialTotal: 55,
       tenantMismatchDeniedTotal: 15,
+      environment: 'production',
       thresholds: {
         maxDenialRate: 0.4,
         maxTenantMismatchRate: 0.1,

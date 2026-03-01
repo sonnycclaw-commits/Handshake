@@ -1,3 +1,4 @@
+import { WF5_ALERT_IDS, getWF5AlertThresholds } from './wf5-alerts-registry'
 export type WF5MetricName =
   | 'wf5_requests_total'
   | 'wf5_decision_allow_total'
@@ -87,15 +88,17 @@ export function evaluateWF5SLOs(input: {
     maxTenantMismatchRate?: number
     replayGuardUnavailableAlertCount?: number
   }
+  environment?: string
 }): WF5SLOReport {
   const total = Math.max(1, input.totalRequests)
   const timeoutEvents = Math.max(1, input.timeoutEventsTotal)
+  const envDefaults = getWF5AlertThresholds(input.environment)
   const thresholds = {
-    maxEscalationRate: input.thresholds?.maxEscalationRate ?? 0.35,
-    minTimeoutFailClosedRate: input.thresholds?.minTimeoutFailClosedRate ?? 1,
-    maxDenialRate: input.thresholds?.maxDenialRate ?? 0.4,
-    maxTenantMismatchRate: input.thresholds?.maxTenantMismatchRate ?? 0.1,
-    replayGuardUnavailableAlertCount: input.thresholds?.replayGuardUnavailableAlertCount ?? 1,
+    maxEscalationRate: input.thresholds?.maxEscalationRate ?? envDefaults.maxEscalationRate,
+    minTimeoutFailClosedRate: input.thresholds?.minTimeoutFailClosedRate ?? envDefaults.minTimeoutFailClosedRate,
+    maxDenialRate: input.thresholds?.maxDenialRate ?? envDefaults.maxDenialRate,
+    maxTenantMismatchRate: input.thresholds?.maxTenantMismatchRate ?? envDefaults.maxTenantMismatchRate,
+    replayGuardUnavailableAlertCount: input.thresholds?.replayGuardUnavailableAlertCount ?? envDefaults.replayGuardUnavailableAlertCount,
   }
 
   const securityDenials = Math.max(0, input.securityDenialTotal ?? 0)
@@ -126,15 +129,15 @@ export function evaluateWF5SLOs(input: {
   }
 
   if (report.denialRate > thresholds.maxDenialRate) {
-    report.alerts.push('alert_denial_spike')
+    report.alerts.push(WF5_ALERT_IDS[1])
   }
 
   if (report.tenantMismatchRate > thresholds.maxTenantMismatchRate) {
-    report.alerts.push('alert_tenant_mismatch_spike')
+    report.alerts.push(WF5_ALERT_IDS[2])
   }
 
   if (report.replayGuardUnavailableCount >= thresholds.replayGuardUnavailableAlertCount) {
-    report.alerts.push('alert_replay_guard_unavailable')
+    report.alerts.push(WF5_ALERT_IDS[0])
   }
 
   // bypass success should always remain zero; denied counts are observability evidence.
