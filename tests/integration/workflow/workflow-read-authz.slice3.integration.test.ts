@@ -112,7 +112,7 @@ function makeEnv(): Env {
 }
 
 describe('Slice 3 workflow read authz', () => {
-  it('denies cross-principal reads without workflow:read:any scope', async () => {
+  it('denies cross-principal reads without read scope', async () => {
     const env = makeEnv()
 
     const create = await app.fetch(new Request('http://local/workflow/requests', {
@@ -142,7 +142,7 @@ describe('Slice 3 workflow read authz', () => {
     }
   })
 
-  it('allows cross-principal reads with workflow:read:any scope', async () => {
+  it('allows cross-principal same-tenant reads with workflow:read:tenant', async () => {
     const env = makeEnv()
 
     const create = await app.fetch(new Request('http://local/workflow/requests', {
@@ -162,7 +162,7 @@ describe('Slice 3 workflow read authz', () => {
     }), env)
     expect(create.status).toBe(200)
 
-    const headers = { 'x-identity-envelope': JSON.stringify({ principalId: 'ops-1', tenantId: 'tenant-a', subjectType: 'human', roles: ['operator'], scopes: ['workflow:read:any'] }) }
+    const headers = { 'x-identity-envelope': JSON.stringify({ principalId: 'ops-1', tenantId: 'tenant-a', subjectType: 'human', roles: ['operator'], scopes: ['workflow:read:tenant'] }) }
 
     for (const path of ['/workflow/requests/s3-r2', '/workflow/decision-room/s3-r2', '/workflow/evidence/s3-r2']) {
       const res = await app.fetch(new Request(`http://local${path}`, { headers }), env)
@@ -170,7 +170,63 @@ describe('Slice 3 workflow read authz', () => {
     }
   })
 
-  it('denies tenant mismatch even with workflow:read:any scope', async () => {
+  it('allows cross-principal reads with workflow:read:any for admin', async () => {
+    const env = makeEnv()
+
+    const create = await app.fetch(new Request('http://local/workflow/requests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        requestId: 's3-r2-admin',
+        principalId: 'owner-2',
+        tenantId: 'tenant-a',
+        agentId: 'a1',
+        actionType: 'payment',
+        payloadRef: 'amount:20',
+        timestamp: Date.now(),
+        privilegedPath: true,
+        context: { amount: 20 }
+      })
+    }), env)
+    expect(create.status).toBe(200)
+
+    const headers = { 'x-identity-envelope': JSON.stringify({ principalId: 'admin-1', tenantId: 'tenant-b', subjectType: 'human', roles: ['admin'], scopes: ['workflow:read:any'] }) }
+
+    for (const path of ['/workflow/requests/s3-r2-admin', '/workflow/decision-room/s3-r2-admin', '/workflow/evidence/s3-r2-admin']) {
+      const res = await app.fetch(new Request(`http://local${path}`, { headers }), env)
+      expect(res.status).toBe(200)
+    }
+  })
+
+  it('allows non-admin workflow:read:any as tenant-scoped only (backward-compat)', async () => {
+    const env = makeEnv()
+
+    const create = await app.fetch(new Request('http://local/workflow/requests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        requestId: 's3-r2-compat',
+        principalId: 'owner-2',
+        tenantId: 'tenant-a',
+        agentId: 'a1',
+        actionType: 'payment',
+        payloadRef: 'amount:20',
+        timestamp: Date.now(),
+        privilegedPath: true,
+        context: { amount: 20 }
+      })
+    }), env)
+    expect(create.status).toBe(200)
+
+    const headers = { 'x-identity-envelope': JSON.stringify({ principalId: 'ops-1', tenantId: 'tenant-a', subjectType: 'human', roles: ['operator'], scopes: ['workflow:read:any'] }) }
+
+    for (const path of ['/workflow/requests/s3-r2-compat', '/workflow/decision-room/s3-r2-compat', '/workflow/evidence/s3-r2-compat']) {
+      const res = await app.fetch(new Request(`http://local${path}`, { headers }), env)
+      expect(res.status).toBe(200)
+    }
+  })
+
+  it('denies tenant mismatch for workflow:read:tenant', async () => {
     const env = makeEnv()
 
     const create = await app.fetch(new Request('http://local/workflow/requests', {
@@ -190,9 +246,39 @@ describe('Slice 3 workflow read authz', () => {
     }), env)
     expect(create.status).toBe(200)
 
-    const headers = { 'x-identity-envelope': JSON.stringify({ principalId: 'ops-1', tenantId: 'tenant-b', subjectType: 'human', roles: ['operator'], scopes: ['workflow:read:any'] }) }
+    const headers = { 'x-identity-envelope': JSON.stringify({ principalId: 'ops-1', tenantId: 'tenant-b', subjectType: 'human', roles: ['operator'], scopes: ['workflow:read:tenant'] }) }
 
     for (const path of ['/workflow/requests/s3-r3', '/workflow/decision-room/s3-r3', '/workflow/evidence/s3-r3']) {
+      const res = await app.fetch(new Request(`http://local${path}`, { headers }), env)
+      expect(res.status).toBe(403)
+      const body: any = await res.json()
+      expect(body.reasonCode).toBe('security_read_tenant_mismatch')
+    }
+  })
+
+  it('denies non-admin workflow:read:any on cross-tenant reads', async () => {
+    const env = makeEnv()
+
+    const create = await app.fetch(new Request('http://local/workflow/requests', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        requestId: 's3-r4',
+        principalId: 'owner-4',
+        tenantId: 'tenant-a',
+        agentId: 'a1',
+        actionType: 'payment',
+        payloadRef: 'amount:20',
+        timestamp: Date.now(),
+        privilegedPath: true,
+        context: { amount: 20 }
+      })
+    }), env)
+    expect(create.status).toBe(200)
+
+    const headers = { 'x-identity-envelope': JSON.stringify({ principalId: 'ops-1', tenantId: 'tenant-b', subjectType: 'human', roles: ['operator'], scopes: ['workflow:read:any'] }) }
+
+    for (const path of ['/workflow/requests/s3-r4', '/workflow/decision-room/s3-r4', '/workflow/evidence/s3-r4']) {
       const res = await app.fetch(new Request(`http://local${path}`, { headers }), env)
       expect(res.status).toBe(403)
       const body: any = await res.json()

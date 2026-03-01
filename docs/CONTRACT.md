@@ -50,4 +50,4 @@ If behavior changes for external integrators, update OpenAPI and regenerate SDK 
 
 ## Read Scope Enforcement
 
-For protected workflow read routes, envelope presence is insufficient. Access requires self principal match or `workflow:read:any` scope; unauthorized reads return `security_read_scope_denied` (403).
+For protected workflow read routes, envelope presence is insufficient. Access requires one of: self principal match, `workflow:read:tenant` (same tenant), or `workflow:read:any` (admin global; non-admin backward-compat behaves tenant-scoped). Unauthorized reads return `security_read_scope_denied` (403); tenant boundary violations return `security_read_tenant_mismatch` (403).
