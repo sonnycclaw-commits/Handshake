@@ -301,3 +301,24 @@ Policy apply must produce a versioned result and auditable linkage to subsequent
 5. Keep escalation precise enough to avoid approval fatigue.
 6. Expose policy impact before apply, and trace applied policy versions after apply.
 
+## AP6 Extension — Identity Simplicity and Contract Governance
+
+To support platform-grade integration, request workflow transport must satisfy:
+
+1. **Canonical Identity Envelope:** protected workflow endpoints consume normalized principal context, not provider-specific claim parsing in handlers.
+2. **Contract Authority:** workflow transport schema must be represented in OpenAPI and treated as source of truth for SDK generation and parity gates.
+3. **Drift Prevention:** runtime payloads, OpenAPI schemas, and SDK types must remain parity-gated in CI.
+4. **Fail-Closed Identity Behavior:** missing/invalid/ambiguous identity context must return deterministic fail-closed outcomes.
+5. **Reason-Code Stability:** reason code + response class remain branch-safe for agent runtimes across AP6 changes.
+
+## AP6 TDD Enforcement Clause
+
+AP6 execution must use strict RED-first discipline:
+1. Define explicit production-readiness criteria per AP6 workstream.
+2. Author failing RED suites before implementation changes.
+3. Capture RED failure evidence.
+4. Implement only enough to satisfy RED-to-GREEN.
+5. Preserve green under refactor and gate checks.
+
+No AP6 implementation task is considered valid if RED suites were not authored first.
+

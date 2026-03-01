@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, authorizePrivilegedExecution } from '@/domain/services/request-workflow'
+import { submitRequest, authorizePrivilegedExecution } from '@/domain/services/request-workflow-api'
 import { getWF5MetricsSnapshot, evaluateWF5SLOs } from '@/domain/services/wf5-ops-metrics'
 
 describe('WF5 Ops alerts integration (C7)', () => {

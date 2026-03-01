@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '@/domain/services/request-workflow'
+import { submitRequest } from '@/domain/services/request-workflow-api'
 
 describe('Request Decision Context RED (unit)', () => {
   it('produces stable decisionContextHash for same normalized context', async () => {

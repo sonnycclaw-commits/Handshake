@@ -10,6 +10,7 @@ export function toStoredRecord(input: RequestInput, result: RequestResult): Stor
   return {
     requestId: input.requestId,
     principalId: input.principalId,
+    tenantId: input.tenantId,
     agentId: input.agentId,
     actionType: input.actionType,
     payloadRef: input.payloadRef,
@@ -26,6 +27,7 @@ export function toLegacyRecord(stored: StoredRequestRecord, inputFallback?: Requ
   const input: RequestInput = inputFallback ?? {
     requestId: stored.requestId,
     principalId: stored.principalId,
+    tenantId: stored.tenantId,
     agentId: stored.agentId,
     actionType: stored.actionType,
     payloadRef: stored.payloadRef,

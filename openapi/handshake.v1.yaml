@@ -1,0 +1,798 @@
+openapi: 3.1.0
+info:
+  title: Handshake API
+  version: 1.0.0
+  description: >
+    Contract-first API surface for Handshake workflow, policy, metrics, and
+    operator rails.
+servers:
+  - url: /
+tags:
+  - name: workflow
+  - name: policy
+  - name: metrics
+  - name: operators
+paths:
+  /workflow/requests:
+    post:
+      tags:
+        - workflow
+      summary: Submit canonical workflow request
+      operationId: submitWorkflowRequest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkflowRequestInput"
+      responses:
+        "200":
+          description: Request accepted and decision produced
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowRequestResult"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "409":
+          $ref: "#/components/responses/ErrorResponse"
+  /workflow/requests/{requestId}:
+    get:
+      tags:
+        - workflow
+      summary: Load persisted request state
+      operationId: getWorkflowRequest
+      parameters:
+        - $ref: "#/components/parameters/RequestIdParam"
+      responses:
+        "200":
+          description: Request state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkflowRequestState"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+      security:
+        - IdentityEnvelopeHeader: []
+  /workflow/decision-room/{requestId}:
+    get:
+      tags:
+        - workflow
+      summary: Load operator decision context
+      operationId: getDecisionRoom
+      parameters:
+        - $ref: "#/components/parameters/RequestIdParam"
+      responses:
+        "200":
+          description: Decision context
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionRoom"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+      security:
+        - IdentityEnvelopeHeader: []
+  /workflow/decision-room/action:
+    post:
+      tags:
+        - workflow
+      summary: Resolve escalation action
+      operationId: resolveDecisionAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecisionActionInput"
+      responses:
+        "200":
+          description: Action accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionActionResult"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+        "409":
+          $ref: "#/components/responses/ErrorResponse"
+      security:
+        - IdentityEnvelopeHeader: []
+      parameters:
+        - in: header
+          name: x-idempotency-key
+          required: false
+          schema:
+            type: string
+          description: Optional idempotency key for replay protection on decision actions.
+  /workflow/authorize-execution:
+    post:
+      tags:
+        - workflow
+      summary: Artifact gate before privileged execution
+      operationId: authorizeExecution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthorizeExecutionInput"
+      responses:
+        "200":
+          description: Gate result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthorizeExecutionResult"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+        "409":
+          $ref: "#/components/responses/ErrorResponse"
+  /workflow/evidence/{requestId}:
+    get:
+      tags:
+        - workflow
+      summary: Ordered workflow evidence timeline
+      operationId: getWorkflowEvidence
+      parameters:
+        - $ref: "#/components/parameters/RequestIdParam"
+      responses:
+        "200":
+          description: Ordered evidence events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EvidenceEvent"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+      security:
+        - IdentityEnvelopeHeader: []
+  /policy/config:
+    get:
+      tags:
+        - policy
+      summary: Read active policy config
+      operationId: getPolicyConfig
+      parameters:
+        - in: query
+          name: scope
+          required: false
+          schema:
+            $ref: "#/components/schemas/PolicyScope"
+        - in: query
+          name: scopeId
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Active policy config
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyConfigResponse"
+  /policy/simulate:
+    post:
+      tags:
+        - policy
+      summary: Simulate policy impact without applying
+      operationId: simulatePolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolicyApplyInput"
+      responses:
+        "200":
+          description: Simulation result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicySimulationResult"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+  /policy/apply:
+    post:
+      tags:
+        - policy
+      summary: Apply and version policy config
+      operationId: applyPolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PolicyApplyInput"
+      responses:
+        "200":
+          description: Policy apply result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PolicyApplyResult"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/ErrorResponse"
+      security:
+        - IdentityEnvelopeHeader: []
+          InternalTrustContextHeader: []
+  /metrics/summary:
+    get:
+      tags:
+        - metrics
+      summary: Read summary metrics
+      operationId: getMetricsSummary
+      parameters:
+        - in: query
+          name: window
+          required: false
+          schema:
+            type: string
+            enum:
+              - 24h
+              - 7d
+              - 30d
+      responses:
+        "200":
+          description: Metrics summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetricsSummary"
+  /metrics/series:
+    get:
+      tags:
+        - metrics
+      summary: Read metric time series
+      operationId: getMetricsSeries
+      parameters:
+        - in: query
+          name: metric
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: bucket
+          required: false
+          schema:
+            type: string
+            enum:
+              - hour
+              - day
+        - in: query
+          name: window
+          required: false
+          schema:
+            type: string
+            enum:
+              - 24h
+              - 7d
+              - 30d
+      responses:
+        "200":
+          description: Metrics time series
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetricsSeriesResponse"
+  /metrics/reasons:
+    get:
+      tags:
+        - metrics
+      summary: Read reason-family distribution
+      operationId: getMetricsReasons
+      parameters:
+        - in: query
+          name: window
+          required: false
+          schema:
+            type: string
+            enum:
+              - 24h
+              - 7d
+              - 30d
+      responses:
+        "200":
+          description: Reason-family statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetricsReasonsResponse"
+  /metrics/project:
+    post:
+      tags:
+        - metrics
+      summary: Append metrics projection event
+      operationId: projectMetricsEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MetricsProjectInput"
+      responses:
+        "200":
+          description: Projection accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MetricsProjectResult"
+        "400":
+          $ref: "#/components/responses/ErrorResponse"
+  /agents:
+    get:
+      tags:
+        - operators
+      summary: List agents
+      operationId: listAgents
+      responses:
+        "200":
+          description: Agent list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - agents
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AgentSummary"
+  /agents/{agentId}:
+    get:
+      tags:
+        - operators
+      summary: Agent detail
+      operationId: getAgent
+      parameters:
+        - $ref: "#/components/parameters/AgentIdParam"
+      responses:
+        "200":
+          description: Agent detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgentDetail"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+  /entities:
+    get:
+      tags:
+        - operators
+      summary: List entities
+      operationId: listEntities
+      responses:
+        "200":
+          description: Entity list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - entities
+                properties:
+                  entities:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/EntitySummary"
+  /entities/{entityId}:
+    get:
+      tags:
+        - operators
+      summary: Entity detail
+      operationId: getEntity
+      parameters:
+        - $ref: "#/components/parameters/EntityIdParam"
+      responses:
+        "200":
+          description: Entity detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EntityDetail"
+        "404":
+          $ref: "#/components/responses/ErrorResponse"
+components:
+  parameters:
+    RequestIdParam:
+      in: path
+      name: requestId
+      required: true
+      schema:
+        type: string
+    AgentIdParam:
+      in: path
+      name: agentId
+      required: true
+      schema:
+        type: string
+    EntityIdParam:
+      in: path
+      name: entityId
+      required: true
+      schema:
+        type: string
+  responses:
+    ErrorResponse:
+      description: Deterministic error envelope
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    DecisionEnum:
+      type: string
+      enum: [allow, deny, escalate]
+    Tier:
+      type: integer
+      minimum: 0
+      maximum: 4
+    PolicyScope:
+      type: string
+      enum: [global, agent]
+    ErrorResponse:
+      type: object
+      required: [status, error, reasonCode, responseClass]
+      properties:
+        status: { type: string, enum: [error] }
+        error: { type: string }
+        reasonCode: { type: string }
+        responseClass: { $ref: "#/components/schemas/ResponseClass" }
+        message: { type: string }
+      additionalProperties: false
+    WorkflowRequestInput:
+      type: object
+      required: [requestId, principalId, agentId, actionType, payloadRef, timestamp]
+      properties:
+        requestId: { type: string }
+        principalId: { type: string }
+        agentId: { type: string }
+        actionType:
+          type: string
+          enum: [payment, credential_use, data_access, external_call, other]
+        payloadRef: { type: string }
+        timestamp: { type: number }
+        privilegedPath: { type: boolean, default: true }
+        context: { type: object, additionalProperties: true }
+    WorkflowArtifact:
+      type: object
+      required: [requestId, decision, reasonCode, tier, timestamp, decisionContextHash, responseClass]
+      properties:
+        requestId: { type: string }
+        decision: { $ref: "#/components/schemas/DecisionEnum" }
+        reasonCode: { type: string }
+        tier: { $ref: "#/components/schemas/Tier" }
+        timestamp: { type: number }
+        decisionContextHash: { type: string }
+        responseClass: { $ref: "#/components/schemas/ResponseClass" }
+        hitlRequestId: { type: string }
+        txnId: { type: string }
+      additionalProperties: false
+    WorkflowRequestResult:
+      allOf:
+        - $ref: "#/components/schemas/WorkflowArtifact"
+        - type: object
+          required: [state]
+          properties:
+            state: { type: string }
+    WorkflowRequestState:
+      type: object
+      required: [requestId, principalId, agentId, actionType, payloadRef, state, terminal, decisionContextHash, artifact]
+      properties:
+        requestId: { type: string }
+        principalId: { type: string }
+        agentId: { type: string }
+        actionType: { type: string }
+        payloadRef: { type: string }
+        state: { type: string }
+        terminal: { type: boolean }
+        decisionContextHash: { type: string }
+        hitlRequestId: { type: string }
+        artifact: { $ref: "#/components/schemas/WorkflowArtifact" }
+    DecisionRoom:
+      type: object
+      required: [requestId, agentId, principalId, riskTier, reasonFamily, artifact]
+      properties:
+        requestId: { type: string }
+        agentId: { type: string }
+        principalId: { type: string }
+        riskTier:
+          type: string
+          enum: [low, medium, high, critical, unknown]
+        reasonFamily: { type: string }
+        artifact: { $ref: "#/components/schemas/WorkflowArtifact" }
+        expiresAt: { type: number }
+    DecisionActionInput:
+      type: object
+      required: [requestId, hitlRequestId, action]
+      properties:
+        requestId: { type: string }
+        hitlRequestId: { type: string }
+        action: { type: string, enum: [approve, reject] }
+    DecisionActionResult:
+      type: object
+      required: [status, requestId, decision, reasonCode, artifact]
+      properties:
+        status: { type: string, enum: [ok] }
+        requestId: { type: string }
+        decision: { $ref: "#/components/schemas/DecisionEnum" }
+        reasonCode: { type: string }
+        artifact: { $ref: "#/components/schemas/WorkflowArtifact" }
+      additionalProperties: false
+    AuthorizeExecutionInput:
+      type: object
+      required: [request, artifact]
+      properties:
+        request: { $ref: "#/components/schemas/WorkflowRequestInput" }
+        artifact: { $ref: "#/components/schemas/WorkflowArtifact" }
+    AuthorizeExecutionResult:
+      type: object
+      required: [status, allowed, reasonCode, responseClass]
+      properties:
+        status: { type: string, enum: [ok] }
+        allowed: { type: boolean }
+        reasonCode: { type: string }
+        responseClass: { $ref: "#/components/schemas/ResponseClass" }
+      additionalProperties: false
+    EvidenceEvent:
+      type: object
+      required: [id, requestId, timestamp, reasonCode, payload]
+      properties:
+        id: { type: string }
+        requestId: { type: string }
+        timestamp: { type: number }
+        reasonCode: { type: string }
+        payload: { type: object, additionalProperties: true }
+    PolicyRule:
+      type: object
+      required: [id, key, value]
+      properties:
+        id: { type: string }
+        key: { type: string }
+        value:
+          oneOf:
+            - { type: string }
+            - { type: number }
+            - { type: boolean }
+            - type: array
+              items: { type: string }
+    PolicyApplyInput:
+      type: object
+      required: [scope, rules]
+      properties:
+        scope: { $ref: "#/components/schemas/PolicyScope" }
+        scopeId: { type: string }
+        rules:
+          type: array
+          items: { $ref: "#/components/schemas/PolicyRule" }
+    PolicyConfigResponse:
+      type: object
+      required: [scope, rules]
+      properties:
+        scope: { $ref: "#/components/schemas/PolicyScope" }
+        scopeId: { type: string }
+        rules:
+          type: array
+          items: { $ref: "#/components/schemas/PolicyRule" }
+        policyVersion: { type: string }
+    PolicySimulationResult:
+      type: object
+      required: [status, blastRadius, predictedChanges, decision, tier, reasons]
+      properties:
+        status: { type: string, enum: [ok] }
+        blastRadius:
+          type: object
+          required: [affectedAgents, highRiskAgents]
+          properties:
+            affectedAgents: { type: integer }
+            highRiskAgents: { type: integer }
+        predictedChanges:
+          type: array
+          items:
+            type: object
+            required: [requestClass, before, after]
+            properties:
+              requestClass: { type: string }
+              before: { type: string }
+              after: { type: string }
+        decision: { $ref: "#/components/schemas/DecisionEnum" }
+        tier: { $ref: "#/components/schemas/Tier" }
+        reasons:
+          type: array
+          items: { type: string }
+    PolicyApplyResult:
+      type: object
+      required: [status, policyVersion, auditEventId, message]
+      properties:
+        status: { type: string, enum: [ok] }
+        policyVersion: { type: string }
+        auditEventId: { type: string }
+        message: { type: string }
+      additionalProperties: false
+    MetricsSummary:
+      type: object
+      additionalProperties: true
+    MetricsSeriesPoint:
+      type: object
+      required: [timestamp, value, sampleCount]
+      properties:
+        timestamp: { type: number }
+        value: { type: number }
+        sampleCount: { type: integer }
+        dimension: { type: string }
+    MetricsSeriesResponse:
+      type: object
+      required: [metric, bucket, window, series]
+      properties:
+        metric: { type: string }
+        bucket: { type: string }
+        window: { type: string }
+        schemaVersion: { type: string }
+        projectorVersion: { type: string }
+        series:
+          type: array
+          items: { $ref: "#/components/schemas/MetricsSeriesPoint" }
+    MetricsReasonsResponse:
+      type: object
+      required: [window, total, families]
+      properties:
+        window: { type: string }
+        schemaVersion: { type: string }
+        projectorVersion: { type: string }
+        total: { type: integer }
+        families:
+          type: array
+          items:
+            type: object
+            required: [reasonFamily, count, percentage]
+            properties:
+              reasonFamily: { type: string }
+              count: { type: integer }
+              percentage: { type: number }
+    MetricsProjectInput:
+      type: object
+      required: [eventId, requestId, timestampMs, decision, reasonCode, reasonFamily, riskTier]
+      properties:
+        eventId: { type: string }
+        requestId: { type: string }
+        timestampMs: { type: number }
+        decision: { type: string }
+        reasonCode: { type: string }
+        reasonFamily: { type: string }
+        riskTier: { type: string }
+        isTerminal: { type: boolean }
+        hasValidLineage: { type: boolean }
+        incidentDetectedTsMs: { type: number }
+        terminalDecisionTsMs: { type: number }
+        humanMinutes: { type: number }
+        computeCostUnits: { type: number }
+        escalationOverheadUnits: { type: number }
+    MetricsProjectResult:
+      type: object
+      required: [status, schemaVersion, projectorVersion]
+      properties:
+        status: { type: string, enum: [ok] }
+        schemaVersion: { type: string }
+        projectorVersion: { type: string }
+    AgentSummary:
+      type: object
+      required: [agentId, riskTier, status]
+      properties:
+        agentId: { type: string }
+        riskTier: { type: string, enum: [low, medium, high, critical, unknown] }
+        status: { type: string }
+        lastDecisionAt: { type: number }
+        driftScore: { type: number }
+    AgentDecision:
+      type: object
+      required: [requestId, timestamp, reasonCode, decision]
+      properties:
+        requestId: { type: string }
+        timestamp: { type: number }
+        reasonCode: { type: string }
+        decision: { $ref: "#/components/schemas/DecisionEnum" }
+    AgentDetail:
+      type: object
+      required: [agentId, riskTier, status, driftScore, recentRequests]
+      properties:
+        agentId: { type: string }
+        riskTier: { type: string, enum: [low, medium, high, critical, unknown] }
+        status: { type: string }
+        driftScore: { type: number }
+        recentRequests:
+          type: array
+          items: { $ref: "#/components/schemas/AgentDecision" }
+    EntitySummary:
+      type: object
+      required: [entityId, entityType, name, trustState, exposureScore, status, interfaceCount, representationCount, updatedAt]
+      properties:
+        entityId: { type: string }
+        entityType: { type: string }
+        name: { type: string }
+        trustState: { type: string }
+        exposureScore: { type: number }
+        status: { type: string }
+        interfaceCount: { type: integer }
+        representationCount: { type: integer }
+        updatedAt: { type: number }
+    EntityInterface:
+      type: object
+      required: [interfaceId, kind, label, locator, verificationState, createdAt, updatedAt]
+      properties:
+        interfaceId: { type: string }
+        kind: { type: string }
+        label: { type: string }
+        locator: { type: string }
+        verificationState: { type: string }
+        authMode: { type: string }
+        createdAt: { type: number }
+        updatedAt: { type: number }
+    EntityRepresentation:
+      type: object
+      required: [representationId, agentId, principalId, scopes, issuedAt]
+      properties:
+        representationId: { type: string }
+        agentId: { type: string }
+        principalId: { type: string }
+        scopes:
+          type: array
+          items: { type: string }
+        interfaceIds:
+          type: array
+          items: { type: string }
+        issuedAt: { type: number }
+        expiresAt: { type: number }
+        revokedAt: { type: number }
+    EntityDetail:
+      type: object
+      required: [entityId, entityType, displayName, ownerPrincipalId, status, trustState, exposureScore, createdAt, updatedAt, interfaces, representations]
+      properties:
+        entityId: { type: string }
+        entityType: { type: string }
+        displayName: { type: string }
+        legalName: { type: string }
+        ownerPrincipalId: { type: string }
+        status: { type: string }
+        trustState: { type: string }
+        exposureScore: { type: number }
+        createdAt: { type: number }
+        updatedAt: { type: number }
+        interfaces:
+          type: array
+          items: { $ref: "#/components/schemas/EntityInterface" }
+        representations:
+          type: array
+          items: { $ref: "#/components/schemas/EntityRepresentation" }
+    ResponseClass:
+      type: string
+      enum: [ok, retryable, blocked, unknown]
+  securitySchemes:
+    IdentityEnvelopeHeader:
+      type: apiKey
+      in: header
+      name: x-identity-envelope
+      description: Canonical identity envelope (JSON) for protected routes.
+    InternalTrustContextHeader:
+      type: apiKey
+      in: header
+      name: x-internal-trust-context
+      description: Signed internal trust token for privileged internal transitions.
+security: []

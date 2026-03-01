@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach } from 'vitest'
-import { setRequestWorkflowStore, submitRequest, resolveRequestHitl, getRequestAudit, getRequestLineage } from '@/domain/services/request-workflow'
-import { InMemoryRequestWorkflowStore } from '@/adapters/persistence/in-memory-request-workflow-store'
+import { describe, it, expect } from 'vitest'
+import { createRequestWorkflowService } from '@/domain/services/request-workflow.service'
 import { D1RequestWorkflowStore } from '@/adapters/persistence/d1-request-workflow-store'
+import { createHITLRequest, approveHITL, rejectHITL, timeoutHITL } from '@/domain/services/hitl-workflow'
 
 class FakeStmt {
   private sql: string
@@ -73,16 +73,21 @@ class FakeD1 {
   }
 }
 
-describe('Request Workflow D1 Store Integration (WF5 C1+C2)', () => {
-  beforeEach(() => {
-    setRequestWorkflowStore(new InMemoryRequestWorkflowStore())
+function makeService(db: D1Database) {
+  return createRequestWorkflowService({
+    requestStore: new D1RequestWorkflowStore(db),
+    hitl: { create: createHITLRequest, approve: approveHITL, reject: rejectHITL, timeout: timeoutHITL },
+    metrics: { incr: async () => {} },
+    clock: { nowMs: () => Date.now() },
   })
+}
 
+describe('Request Workflow D1 Store Integration (WF5 C1+C2)', () => {
   it('persists request and audit through D1 adapter', async () => {
     const fakeDb = new FakeD1() as unknown as D1Database
-    setRequestWorkflowStore(new D1RequestWorkflowStore(fakeDb))
+    const service = makeService(fakeDb)
 
-    const out = await submitRequest({
+    const out = await service.submitRequest({
       requestId: 'd1-1',
       principalId: 'p1',
       agentId: 'a1',
@@ -94,15 +99,15 @@ describe('Request Workflow D1 Store Integration (WF5 C1+C2)', () => {
     })
 
     expect(out.requestId).toBe('d1-1')
-    const audit = await getRequestAudit('d1-1')
+    const audit = await service.getRequestAudit('d1-1')
     expect(audit.length).toBeGreaterThan(0)
   })
 
   it('persists terminal transition and lineage after HITL timeout through D1 adapter', async () => {
     const fakeDb = new FakeD1() as unknown as D1Database
-    setRequestWorkflowStore(new D1RequestWorkflowStore(fakeDb))
+    const service = makeService(fakeDb)
 
-    const out = await submitRequest({
+    const out = await service.submitRequest({
       requestId: 'd1-2',
       principalId: 'p1',
       agentId: 'a1',
@@ -115,7 +120,7 @@ describe('Request Workflow D1 Store Integration (WF5 C1+C2)', () => {
 
     expect(out.decision).toBe('escalate')
 
-    const timedOut = await resolveRequestHitl({
+    const timedOut = await service.resolveRequestHitl({
       requestId: out.requestId,
       hitlRequestId: out.hitlRequestId!,
       decision: 'timeout',
@@ -123,10 +128,10 @@ describe('Request Workflow D1 Store Integration (WF5 C1+C2)', () => {
     })
 
     expect(timedOut.decision).toBe('deny')
-    const audit = await getRequestAudit('d1-2')
+    const audit = await service.getRequestAudit('d1-2')
     expect(audit.length).toBeGreaterThanOrEqual(2)
 
-    const lineage = await getRequestLineage('d1-2')
+    const lineage = await service.getRequestLineage('d1-2')
     expect(lineage.length).toBeGreaterThanOrEqual(1)
   })
 })

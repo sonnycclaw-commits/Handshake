@@ -6,6 +6,7 @@ import type {
 type RequestRow = {
   request_id: string
   principal_id: string
+  tenant_id: string | null
   agent_id: string
   action_type: 'payment' | 'data_access' | 'credential_use' | 'external_call' | 'other'
   payload_ref: string
@@ -63,6 +64,7 @@ export class D1RequestWorkflowStore implements RequestWorkflowStore {
     return {
       requestId: row.request_id,
       principalId: row.principal_id,
+      tenantId: row.tenant_id ?? undefined,
       agentId: row.agent_id,
       actionType: row.action_type,
       payloadRef: row.payload_ref,
@@ -79,10 +81,11 @@ export class D1RequestWorkflowStore implements RequestWorkflowStore {
     await this.db.prepare(`
       INSERT INTO request_workflow_requests (
         request_id, principal_id, agent_id, action_type, payload_ref, request_timestamp,
-        state, terminal, decision_context_hash, hitl_request_id, result_json, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+        state, terminal, decision_context_hash, hitl_request_id, result_json, tenant_id, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       ON CONFLICT(request_id) DO UPDATE SET
         principal_id = excluded.principal_id,
+        tenant_id = excluded.tenant_id,
         agent_id = excluded.agent_id,
         action_type = excluded.action_type,
         payload_ref = excluded.payload_ref,
@@ -105,6 +108,7 @@ export class D1RequestWorkflowStore implements RequestWorkflowStore {
       record.decisionContextHash,
       record.hitlRequestId ?? null,
       JSON.stringify(record.result),
+      record.tenantId ?? null,
     ).run()
   }
 

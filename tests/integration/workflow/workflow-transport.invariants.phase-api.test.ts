@@ -154,14 +154,14 @@ describe('WF5 API transport invariants', () => {
 
     const rejectRes = await app.fetch(new Request('http://local/workflow/decision-room/action', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'authorization': 'Bearer principal:p1' },
+      headers: { 'content-type': 'application/json', 'x-identity-envelope': JSON.stringify({ principalId: 'p1', subjectType: 'human', roles: [], scopes: [] }) },
       body: JSON.stringify({ requestId: 'term-1', hitlRequestId: created.hitlRequestId, action: 'reject' })
     }), env)
     expect(rejectRes.status).toBe(200)
 
     const lateApprove = await app.fetch(new Request('http://local/workflow/decision-room/action', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'authorization': 'Bearer principal:p1' },
+      headers: { 'content-type': 'application/json', 'x-identity-envelope': JSON.stringify({ principalId: 'p1', subjectType: 'human', roles: [], scopes: [] }) },
       body: JSON.stringify({ requestId: 'term-1', hitlRequestId: created.hitlRequestId, action: 'approve' })
     }), env)
 
@@ -202,8 +202,8 @@ describe('WF5 API transport invariants', () => {
 
     expect(approveRes.status).toBe(401)
     const body: any = await approveRes.json()
-    expect(body.reasonCode).toBe('security_missing_authorization_header')
-    expect(body.error).toBe('security_missing_authorization_header')
+    expect(body.reasonCode).toBe('security_missing_identity_envelope')
+    expect(body.error).toBe('security_missing_identity_envelope')
   })
 
   it('artifact gate denies mismatched context hash', async () => {

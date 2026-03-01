@@ -15,6 +15,9 @@ describe('Reason Code Registry (C5)', () => {
   it('accepts known reason codes', () => {
     expect(isKnownReasonCode('policy_allow')).toBe(true)
     expect(() => assertKnownReasonCode('security_side_channel_denied')).not.toThrow()
+    expect(() => assertKnownReasonCode('security_missing_identity_envelope')).not.toThrow()
+    expect(() => assertKnownReasonCode('security_invalid_internal_trust_context')).not.toThrow()
+    expect(() => assertKnownReasonCode('security_internal_trust_context_expired')).not.toThrow()
   })
 
   it('rejects unknown reason codes', () => {
@@ -26,6 +29,7 @@ describe('Reason Code Registry (C5)', () => {
     expect(classifyReasonCode('trust_context_missing_binding')).toBe('trust_context')
     expect(classifyReasonCode('policy_allow')).toBe('policy')
     expect(classifyReasonCode('security_non_allow_artifact')).toBe('security')
+    expect(classifyReasonCode('security_replay_detected')).toBe('security')
     expect(classifyReasonCode('hitl_approved')).toBe('hitl')
     expect(classifyReasonCode('adapter_timeout')).toBe('adapter')
     expect(classifyReasonCode('x_custom')).toBe('unknown')

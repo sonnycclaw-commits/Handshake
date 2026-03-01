@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest } from '@/domain/services/request-workflow'
+import { submitRequest } from '@/domain/services/request-workflow-api'
 import { getRetryPolicyForReason } from '@/domain/services/request-retry-policy'
 
 describe('Request Workflow RED (agent contract stability)', () => {

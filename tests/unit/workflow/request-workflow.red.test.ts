@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { submitRequest, resolveRequestHitl, getRequestAudit } from '@/domain/services/request-workflow'
+import { submitRequest, resolveRequestHitl, getRequestAudit } from '@/domain/services/request-workflow-api'
 
 describe('Request Workflow RED (unit)', () => {
   it('RW-001: denies invalid shape or trust context fail-closed', async () => {

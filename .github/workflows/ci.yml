@@ -30,3 +30,30 @@ jobs:
 
       - name: Boundary guard
         run: npx vitest run tests/unit/architecture/domain-boundary-guard.test.ts
+
+      - name: AP6 gate
+        run: npm run test:ap6-gate
+
+      - name: AP6 report verification
+        run: npm run check:ap6-report
+
+      - name: OpenAPI contract check
+        run: npm run check:openapi
+
+      - name: Protected route security parity
+        run: npm run check:security-parity
+
+      - name: Reason-code status map completeness
+        run: npm run check:reason-code-map
+
+      - name: No workflow shim imports in src
+        run: npm run check:no-workflow-shim-imports
+
+      - name: Schema preflight
+        run: npm run check:schema-preflight
+
+      - name: SDK drift check
+        run: npm run check:sdk-drift
+
+      - name: SDK smoke
+        run: npm run test:sdk-smoke
