@@ -253,3 +253,51 @@ Minimum classes:
 - `tests/integration/workflow/request-decision-artifact-gate.red.integration.test.ts`
 - `tests/integration/workflow/request-escalation-budget.red.integration.test.ts`
 - `tests/unit/workflow/request-agent-contract-stability.red.test.ts`
+
+## Production Transport Contract (WF-05 + Operator Surface)
+
+The following HTTP contract is required to make workflow capabilities operable by frontend clients.
+
+### A) Workflow Rail (required)
+1. `POST /workflow/requests`
+   - Intent: submit canonical request for decisioning.
+   - Must return: `requestId, decision, reasonCode, tier, timestamp, decisionContextHash, hitlRequestId?, txnId?`.
+2. `GET /workflow/requests/:requestId`
+   - Intent: fetch canonical persisted request state and latest artifact.
+3. `GET /workflow/decision-room/:requestId`
+   - Intent: operator-facing decision context for one request.
+   - Must include: request summary, risk tier, reason family, current artifact.
+4. `POST /workflow/decision-room/action`
+   - Intent: resolve pending escalation branch.
+   - Canonical action contract: `approve|reject` (timeout is system-driven).
+5. `GET /workflow/evidence/:requestId`
+   - Intent: ordered replayable evidence timeline from audit + lineage events.
+
+### B) Policy Rail (required for production governance)
+1. `GET /policy/config`
+2. `POST /policy/simulate`
+3. `POST /policy/apply`
+
+Policy apply must produce a versioned result and auditable linkage to subsequent decisions.
+
+### C) Metrics Rail (already live)
+- `GET /metrics/summary`
+- `GET /metrics/series`
+- `GET /metrics/reasons`
+- `POST /metrics/project`
+
+### D) Operator Read Rails
+- Agents read endpoints are in-scope for production completion.
+- Entities endpoints are blocked pending explicit entity domain/persistence contract approval.
+
+---
+
+## Product Capability Contract (What the app must do)
+
+1. Give operators clear context for high-risk decisions in one place.
+2. Ensure every privileged continuation is decision-artifact gated.
+3. Keep decision outcomes deterministic across API/chat/workflow surfaces.
+4. Preserve audit + lineage integrity as replayable evidence.
+5. Keep escalation precise enough to avoid approval fatigue.
+6. Expose policy impact before apply, and trace applied policy versions after apply.
+

@@ -64,9 +64,13 @@ export async function resolveRejectBranch(record: RequestRecord, deps: Deps): Pr
   return persistTerminal(record, out, 'escalated_rejected_terminal', deps)
 }
 
-export async function resolveApproveBranch(record: RequestRecord, deps: Deps): Promise<RequestRecord> {
+export async function resolveApproveBranch(record: RequestRecord, deps: Deps, approverId?: string): Promise<RequestRecord> {
+  const actor = typeof approverId === 'string' && approverId.trim().length > 0
+    ? approverId.trim()
+    : record.input.principalId
+
   try {
-    await deps.approveHITL(record.hitlRequestId!, { approverId: record.input.principalId })
+    await deps.approveHITL(record.hitlRequestId!, { approverId: actor })
   } catch {
     const out = deps.deny(record.input, 'hitl_approval_unauthorized', 4)
     const event = {

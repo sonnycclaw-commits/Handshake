@@ -206,6 +206,7 @@ export async function resolveRequestHitl(input: {
   hitlRequestId: string
   decision: 'approve' | 'reject' | 'timeout'
   timestamp: number
+  approverId?: string
 }): Promise<RequestResult> {
   let record = REQUEST_STORE.get(input.requestId)
 
@@ -276,7 +277,7 @@ export async function resolveRequestHitl(input: {
   // approve
   const next = await resolveApproveBranch(record, {
     workflowStore, timeoutHITL, rejectHITL, approveHITL, appendAuditLegacy, appendLineage, incrWF5Metric: (metric: string) => incrWF5Metric(metric as any), deny, allow
-  })
+  }, input.approverId)
   REQUEST_STORE.set(record.input.requestId, next)
   return next.result
 }

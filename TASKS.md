@@ -123,3 +123,56 @@ Last updated: 2026-02-28 UTC
 - [ ] P4-M1 Converge onboarding workflow semantics onto WF5 canonical reason/state contracts
 - [ ] P4-M2 Introduce architecture lint for single-purpose file scope thresholds
 - [ ] P4-M3 Add sunset tasks for remaining compatibility fallback paths
+
+## WF-05/OPS Transport Completion Queue (Production Readiness)
+
+### Principle
+Production readiness = endpoint transport + invariant preservation + FE/BE contract parity.
+
+### WF5-API-01 — Workflow Rail Exposure
+- [x] WF5-API-01.1 Add `POST /workflow/requests` (submit canonical request)
+- [x] WF5-API-01.2 Add `GET /workflow/requests/:requestId` (persisted state + artifact)
+- [x] WF5-API-01.3 Add `GET /workflow/decision-room/:requestId` (operator decision context payload)
+- [x] WF5-API-01.4 Add `POST /workflow/decision-room/action` (canonical actions `approve|reject`)
+- [x] WF5-API-01.5 Add `GET /workflow/evidence/:requestId` (ordered audit + lineage timeline)
+
+### WF5-API-02 — Invariant Enforcement at Endpoint Boundary
+- [x] WF5-API-02.1 Enforce fail-closed validation at request submit boundary
+- [x] WF5-API-02.2 Enforce terminal-state immutability via action endpoint
+- [x] WF5-API-02.3 Enforce decision artifact semantics on privileged continuation path
+- [x] WF5-API-02.4 Structured reason-code responses for all non-2xx outcomes
+
+### WF5-API-03 — Policy Rail Exposure (Versioned Governance)
+- [x] WF5-API-03.1 Add `GET /policy/config`
+- [x] WF5-API-03.2 Add `POST /policy/simulate`
+- [x] WF5-API-03.3 Add `POST /policy/apply`
+- [x] WF5-API-03.4 Persist policy version and return traceable version id in apply response
+- [x] WF5-API-03.5 Emit audit linkage for apply operations
+
+### WF5-API-04 — Operator Read Rails
+- [x] WF5-API-04.1 Add `GET /agents`
+- [x] WF5-API-04.2 Add `GET /agents/:agentId`
+- [x] WF5-API-04.3 Entities rail decision gate: approve explicit entity domain + storage contract before endpoint release
+
+### WF5-API-05 — Contract + Parity Gates
+- [x] WF5-API-05.1 Lock transport contracts in tests for workflow/policy/agents rails
+- [x] WF5-API-05.2 Add FE/BE parity test for decision-room action semantics (`approve|reject`)
+- [x] WF5-API-05.3 Add integration tests for evidence timeline ordering/completeness
+- [x] WF5-API-05.4 Add production gate command that validates contract + invariants + parity
+
+
+
+WF5-API-05.4 note: Dedicated production gate command is `npm run test:prod-gate`.
+
+
+Hardening notes (post-sniff-test):
+- Decision approve path now requires Authorization: Bearer principal:<ownerId> and enforces approver authorization.
+- Error envelope compatibility preserved with both `error` and `reasonCode` fields.
+- FE action semantic guard enforced: `escalate` is rejected at decision action endpoint (400).
+- Production gate command added: `npm run test:prod-gate`.
+
+
+WF5-API-04 note: Agents + Entities read rails implemented. Entity model is now unlocked with approved type-agnostic contract.
+
+
+Entity model note: Implemented as type-agnostic (`entity_type` string) to preserve platform agility and avoid lock-in.
